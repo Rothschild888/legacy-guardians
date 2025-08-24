@@ -1,0 +1,6 @@
+[
+  {"key": "tech", "name": "敏捷之剑", "theme": "forest", "icon": "🗡️", "color": "#00fff7"},
+  {"key": "bond", "name": "稳固之盾", "theme": "snow", "icon": "🛡️", "color": "#00eaff"},
+  {"key": "commodity", "name": "火焰之斧", "theme": "volcano", "icon": "🪓", "color": "#ff6f00"},
+  {"key": "crypto", "name": "神秘水晶", "theme": "starsea", "icon": "🔮", "color": "#ff00cc"}
+]

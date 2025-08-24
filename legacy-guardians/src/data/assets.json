@@ -1,0 +1,6 @@
+[
+  { "key": "tech", "name": "科技股", "expectedReturn": 0.08, "volatility": 0.15 },
+  { "key": "bond", "name": "债券", "expectedReturn": 0.03, "volatility": 0.05 },
+  { "key": "commodity", "name": "商品", "expectedReturn": 0.05, "volatility": 0.10 },
+  { "key": "crypto", "name": "加密货币", "expectedReturn": 0.12, "volatility": 0.25 }
+]
