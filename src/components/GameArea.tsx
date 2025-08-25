@@ -110,6 +110,8 @@ const AssetCard = styled.div<{ $theme: string }>`
   position: relative;
   box-shadow: 0 2px 8px ${theme.colors.cyber.primary}33;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 `;
 
 const AssetHeader = styled.div`
@@ -155,6 +157,7 @@ const RiskMeterBar = styled.div<{ $width: number; $isHighRisk: boolean }>`
 
 const MiniChartButton = styled.div`
   height: 36px;
+  width: 100%;
   background: linear-gradient(90deg, #222, #444);
   border-radius: 6px;
   margin-bottom: 4px;
@@ -162,10 +165,12 @@ const MiniChartButton = styled.div`
   align-items: center;
   justify-content: center;
   color: ${theme.colors.cyber.primary};
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   box-shadow: 0 0 6px ${theme.colors.cyber.primary}99;
   transition: all ${theme.transitions.fast};
+  text-align: center;
+  white-space: nowrap;
 
   &:hover {
     box-shadow: 0 0 8px ${theme.colors.cyber.primary};
@@ -324,7 +329,7 @@ export const GameArea: React.FC<GameAreaProps> = ({
                   }\n\n风险提示: ${(weights[artifact.key] || 0) > 60 ? '集中风险' : '分散配置'}`);
                 }}
               >
-                <span>点击查看 Mini Chart</span>
+                点击查看 Mini Chart
               </MiniChartButton>
             </AssetCard>
           ))}
