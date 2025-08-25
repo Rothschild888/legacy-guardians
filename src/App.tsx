@@ -1,6 +1,9 @@
 import React from 'react';
+import { ThemeProvider } from 'styled-components';
 import './styles/legacy-ui.css';
 import './styles/legacy-cyberpunk.css';
+import { GlobalStyles } from './styles/GlobalStyles';
+import { theme } from './styles/theme';
 import { GameLayout } from './components';
 
 function ErrorBoundary({ children }: { children: React.ReactNode }) {
@@ -17,8 +20,11 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <GameLayout />
-    </ErrorBoundary>
+    <ThemeProvider theme={theme}>
+      <GlobalStyles />
+      <ErrorBoundary>
+        <GameLayout />
+      </ErrorBoundary>
+    </ThemeProvider>
   );
 }

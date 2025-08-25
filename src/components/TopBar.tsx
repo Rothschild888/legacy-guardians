@@ -1,4 +1,6 @@
 import React from 'react';
+import styled from 'styled-components';
+import { theme } from '../styles/theme';
 
 interface TopBarProps {
   companyName: string;
@@ -11,6 +13,107 @@ interface TopBarProps {
   onEditCompany: () => void;
 }
 
+// Styled Components
+const EditButton = styled.button`
+  position: fixed;
+  top: 32px;
+  right: 32px;
+  z-index: 1000;
+  background: ${theme.colors.meme.primary};
+  color: ${theme.colors.meme.text};
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 28px;
+  font-weight: 900;
+  box-shadow: 0 0 16px ${theme.colors.meme.primary}cc;
+  border: none;
+  cursor: pointer;
+  transition: all ${theme.transitions.normal};
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px ${theme.colors.meme.primary};
+  }
+`;
+
+const TopBarContainer = styled.div<{ $theme: string }>`
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: ${({ $theme }) => 
+    $theme === 'cyberpunk' ? theme.colors.cyber.bg :
+    $theme === 'classic' ? theme.colors.classic.bg :
+    theme.colors.meme.primary
+  };
+  border-bottom: 2px solid ${theme.colors.cyber.primary};
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+`;
+
+const CompanyInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+const CompanyAvatar = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px ${theme.colors.cyber.accent};
+`;
+
+const CompanyName = styled.span<{ $theme: string }>`
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: ${({ $theme }) => 
+    $theme === 'cyberpunk' ? theme.colors.cyber.primary :
+    $theme === 'classic' ? theme.colors.classic.text :
+    theme.colors.meme.accent
+  };
+`;
+
+const StatusInfo = styled.div`
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: ${theme.colors.cyber.primary};
+`;
+
+const StatusInfoSecondary = styled(StatusInfo)`
+  color: ${theme.colors.cyber.secondary};
+`;
+
+const StatusInfoText = styled(StatusInfo)`
+  color: ${theme.colors.cyber.text};
+`;
+
+const ResourcesContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ResourceBadge = styled.span<{ $type: 'coins' | 'gems' }>`
+  background: ${({ $type }) => 
+    $type === 'coins' ? theme.colors.meme.primary : theme.colors.cyber.secondary
+  };
+  color: ${({ $type }) => 
+    $type === 'coins' ? theme.colors.meme.text : theme.colors.cyber.text
+  };
+  border-radius: 8px;
+  padding: 0.3em 1em;
+  font-weight: 700;
+  transition: transform ${theme.transitions.fast};
+
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
 export const TopBar: React.FC<TopBarProps> = ({
   companyName,
   avatar,
@@ -18,97 +121,46 @@ export const TopBar: React.FC<TopBarProps> = ({
   day,
   coins,
   gems,
-  theme,
+  theme: currentTheme,
   onEditCompany
 }) => {
   return (
     <>
       {/* Company/Avatar Customization Modal Button */}
-      <button 
-        style={{ 
-          position: 'fixed', 
-          top: 32, 
-          right: 32, 
-          zIndex: 1000, 
-          background: '#f6d365', 
-          color: '#222', 
-          borderRadius: '50%', 
-          width: 60, 
-          height: 60, 
-          fontSize: 28, 
-          fontWeight: 900, 
-          boxShadow: '0 0 16px #f6d365cc', 
-          border: 'none', 
-          cursor: 'pointer' 
-        }} 
-        onClick={onEditCompany} 
-        title="编辑公司信息"
-      >
+      <EditButton onClick={onEditCompany} title="编辑公司信息">
         ⚙️
-      </button>
+      </EditButton>
 
       {/* Sticky Top Bar with Company/Avatar/Resources */}
-      <div style={{ 
-        position: 'sticky', 
-        top: 0, 
-        zIndex: 10, 
-        background: theme === 'cyberpunk' ? 'rgba(20,20,40,0.98)' : theme === 'classic' ? '#fff' : '#f6d365', 
-        borderBottom: '2px solid #00fff7', 
-        padding: '0.8rem 2rem', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        marginBottom: '1.5rem' 
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <img 
-            src={avatar} 
-            alt="avatar" 
-            style={{ 
-              width: 40, 
-              height: 40, 
-              borderRadius: '50%', 
-              boxShadow: '0 0 8px #e67e22' 
-            }} 
-          />
-          <span style={{ 
-            fontWeight: 700, 
-            fontSize: '1.1rem', 
-            color: theme === 'cyberpunk' ? '#00fff7' : theme === 'classic' ? '#222' : '#e67e22' 
-          }}>
+      <TopBarContainer $theme={currentTheme}>
+        <CompanyInfo>
+          <CompanyAvatar src={avatar} alt="avatar" />
+          <CompanyName $theme={currentTheme}>
             {companyName}
-          </span>
-        </div>
-        <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#00fff7' }}>
+          </CompanyName>
+        </CompanyInfo>
+        
+        <StatusInfo>
           守护者之星：{badges.length}/5
-        </div>
-        <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#ff00cc' }}>
+        </StatusInfo>
+        
+        <StatusInfoSecondary>
           财富目标：300%
-        </div>
-        <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#fff' }}>
+        </StatusInfoSecondary>
+        
+        <StatusInfoText>
           第 {day + 1} 天
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ 
-            background: '#f6d365', 
-            color: '#222', 
-            borderRadius: 8, 
-            padding: '0.3em 1em', 
-            fontWeight: 700 
-          }}>
+        </StatusInfoText>
+        
+        <ResourcesContainer>
+          <ResourceBadge $type="coins">
             💰 {coins}
-          </span>
-          <span style={{ 
-            background: '#ff00cc', 
-            color: '#fff', 
-            borderRadius: 8, 
-            padding: '0.3em 1em', 
-            fontWeight: 700 
-          }}>
+          </ResourceBadge>
+          <ResourceBadge $type="gems">
             💎 {gems}
-          </span>
-        </div>
-      </div>
+          </ResourceBadge>
+        </ResourcesContainer>
+      </TopBarContainer>
     </>
   );
 };

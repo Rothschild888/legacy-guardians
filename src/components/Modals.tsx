@@ -1,4 +1,6 @@
 import React from 'react';
+import styled from 'styled-components';
+import { theme } from '../styles/theme';
 
 interface ModalsProps {
   showModal: boolean;
@@ -35,6 +37,282 @@ interface ModalsProps {
   onResetGame: () => void;
 }
 
+// Styled Components
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.7);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ModalContent = styled.div<{ $variant: 'edit' | 'ai' | 'dilemma' | 'quiz' | 'general' }>`
+  background: ${({ $variant }) => 
+    $variant === 'edit' ? theme.colors.cyber.text : theme.colors.cyber.dark
+  };
+  color: ${({ $variant }) => 
+    $variant === 'edit' ? theme.colors.cyber.dark : theme.colors.cyber.text
+  };
+  border-radius: 16px;
+  padding: 32px;
+  min-width: 320px;
+  max-width: 480px;
+  box-shadow: 0 0 32px ${({ $variant }) => 
+    $variant === 'edit' ? `${theme.colors.meme.primary}cc` : `${theme.colors.cyber.primary}cc`
+  };
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const ModalCloseButton = styled.span<{ $color: string }>`
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 22px;
+  cursor: pointer;
+  color: ${({ $color }) => $color};
+  transition: color ${theme.transitions.fast};
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const ModalTitle = styled.h2<{ $color: string }>`
+  color: ${({ $color }) => $color};
+  margin-bottom: 16px;
+`;
+
+const FormLabel = styled.label`
+  font-weight: 700;
+  margin-bottom: 8px;
+`;
+
+const FormInput = styled.input`
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid ${theme.colors.cyber.accent};
+  font-size: 16px;
+  margin-bottom: 8px;
+  background: ${theme.colors.meme.primary}22;
+  color: ${theme.colors.cyber.dark};
+  transition: border-color ${theme.transitions.fast};
+
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.cyber.primary};
+  }
+`;
+
+const FormSelect = styled.select`
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid ${theme.colors.cyber.accent};
+  font-size: 16px;
+  margin-bottom: 8px;
+  background: ${theme.colors.meme.primary}22;
+  color: ${theme.colors.cyber.dark};
+  transition: border-color ${theme.transitions.fast};
+
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.cyber.primary};
+  }
+`;
+
+const AvatarOptions = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const AvatarOption = styled.img<{ $selected: boolean }>`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: ${({ $selected }) => 
+    $selected ? `3px solid ${theme.colors.cyber.accent}` : '2px solid #ccc'
+  };
+  cursor: pointer;
+  box-shadow: ${({ $selected }) => 
+    $selected ? `0 0 8px ${theme.colors.cyber.accent}` : 'none'
+  };
+  transition: all ${theme.transitions.fast};
+
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const ModalButton = styled.button<{ $variant: 'primary' | 'secondary' }>`
+  background: ${({ $variant }) => 
+    $variant === 'primary' ? theme.colors.cyber.accent : theme.colors.cyber.primary
+  };
+  color: ${({ $variant }) => 
+    $variant === 'primary' ? theme.colors.cyber.text : theme.colors.cyber.dark
+  };
+  margin-top: 12px;
+  transition: all ${theme.transitions.fast};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+`;
+
+const AiPartnerHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+`;
+
+const AiPartnerAvatar = styled.img`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px ${theme.colors.cyber.primary};
+`;
+
+const AiPartnerName = styled.span`
+  font-weight: 700;
+  color: ${theme.colors.cyber.primary};
+`;
+
+const AiDescription = styled.div`
+  font-size: 16px;
+  margin-bottom: 8px;
+`;
+
+const AiInput = styled.input`
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid ${theme.colors.cyber.primary};
+  font-size: 16px;
+  margin-bottom: 8px;
+  background: #111;
+  color: ${theme.colors.cyber.text};
+  transition: border-color ${theme.transitions.fast};
+
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.cyber.secondary};
+  }
+`;
+
+const AiResponse = styled.div`
+  background: #333;
+  color: ${theme.colors.cyber.primary};
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 8px;
+`;
+
+const DilemmaText = styled.div`
+  font-size: 18px;
+  margin-bottom: 24px;
+`;
+
+const DilemmaOptions = styled.div`
+  display: flex;
+  gap: 16px;
+`;
+
+const QuizQuestion = styled.div`
+  font-size: 18px;
+  margin-bottom: 24px;
+`;
+
+const QuizOptions = styled.div`
+  display: flex;
+  gap: 16px;
+`;
+
+const QuizResult = styled.div<{ $correct: boolean }>`
+  margin-top: 18px;
+  color: ${({ $correct }) => 
+    $correct ? theme.colors.cyber.success : theme.colors.cyber.error
+  };
+  font-weight: 700;
+`;
+
+const EndgameOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const EndgameImage = styled.img`
+  width: 180px;
+  height: 180px;
+  margin-bottom: 24px;
+`;
+
+const EndgameTitle = styled.h2`
+  color: ${theme.colors.cyber.primary};
+  font-size: 2rem;
+  text-shadow: 0 0 16px ${theme.colors.cyber.secondary};
+  margin-bottom: 12px;
+`;
+
+const EndgameDescription = styled.div`
+  color: ${theme.colors.cyber.text};
+  text-align: center;
+`;
+
+const SummaryOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+`;
+
+const SummaryTitle = styled.h2`
+  color: ${theme.colors.cyber.secondary};
+  font-size: 2rem;
+  margin-bottom: 16px;
+`;
+
+const SummaryContent = styled.div`
+  color: ${theme.colors.cyber.text};
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  text-align: center;
+`;
+
+const SummaryItem = styled.div`
+  margin-bottom: 8px;
+`;
+
+const GeneralModalContent = styled.pre`
+  white-space: pre-wrap;
+  font-size: 16px;
+`;
+
 export const Modals: React.FC<ModalsProps> = ({
   showModal,
   modalContent,
@@ -47,7 +325,7 @@ export const Modals: React.FC<ModalsProps> = ({
   companyName,
   avatar,
   avatarOptions,
-  theme,
+  theme: currentTheme,
   pendingCompanyName,
   aiPartnerData,
   aiInput,
@@ -78,419 +356,202 @@ export const Modals: React.FC<ModalsProps> = ({
     <>
       {/* Company/Avatar Customization Modal */}
       {showModal && modalContent === 'edit' && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100vw', 
-          height: '100vh', 
-          background: 'rgba(0,0,0,0.7)', 
-          zIndex: 999, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}>
-          <div style={{ 
-            background: '#fff', 
-            color: '#222', 
-            borderRadius: 16, 
-            padding: 32, 
-            minWidth: 320, 
-            maxWidth: 480, 
-            boxShadow: '0 0 32px #f6d365cc', 
-            position: 'relative', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: 16 
-          }}>
-            <span 
-              style={{ 
-                position: 'absolute', 
-                top: 12, 
-                right: 18, 
-                fontSize: 22, 
-                cursor: 'pointer', 
-                color: '#e67e22' 
-              }} 
+        <ModalOverlay>
+          <ModalContent $variant="edit">
+            <ModalCloseButton 
+              $color={theme.colors.cyber.accent} 
               onClick={onModalClose}
             >
               ×
-            </span>
-            <h2 style={{ color: '#e67e22', marginBottom: 16 }}>
+            </ModalCloseButton>
+            <ModalTitle $color={theme.colors.cyber.accent}>
               {companyName ? '编辑公司信息' : '注册公司'}
-            </h2>
-            <label style={{ fontWeight: 700, marginBottom: 8 }}>公司名称：</label>
-            <input 
+            </ModalTitle>
+            <FormLabel>公司名称：</FormLabel>
+            <FormInput 
               type="text" 
               value={pendingCompanyName} 
               onChange={e => onPendingCompanyNameChange(e.target.value)} 
-              style={{ 
-                padding: '0.7rem 1rem', 
-                borderRadius: 8, 
-                border: '1px solid #e67e22', 
-                fontSize: 16, 
-                marginBottom: 8, 
-                background: '#f6d36522', 
-                color: '#222' 
-              }} 
               autoFocus 
             />
-            <label style={{ fontWeight: 700, marginBottom: 8 }}>选择头像：</label>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+            <FormLabel>选择头像：</FormLabel>
+            <AvatarOptions>
               {avatarOptions.map(url => (
-                <img 
+                <AvatarOption 
                   key={url} 
                   src={url} 
                   alt="avatar" 
-                  style={{ 
-                    width: 48, 
-                    height: 48, 
-                    borderRadius: '50%', 
-                    border: avatar === url ? '3px solid #e67e22' : '2px solid #ccc', 
-                    cursor: 'pointer', 
-                    boxShadow: avatar === url ? '0 0 8px #e67e22' : 'none' 
-                  }} 
+                  $selected={avatar === url}
                   onClick={() => onAvatarChange(url)} 
                 />
               ))}
-            </div>
-            <label style={{ fontWeight: 700, marginBottom: 8 }}>主题风格：</label>
-            <select 
-              value={theme} 
-              onChange={e => onThemeChange(e.target.value)} 
-              style={{ 
-                padding: '0.7rem 1rem', 
-                borderRadius: 8, 
-                border: '1px solid #e67e22', 
-                fontSize: 16, 
-                marginBottom: 8, 
-                background: '#f6d36522', 
-                color: '#222' 
-              }}
+            </AvatarOptions>
+            <FormLabel>主题风格：</FormLabel>
+            <FormSelect 
+              value={currentTheme} 
+              onChange={e => onThemeChange(e.target.value)}
             >
               <option value="cyberpunk">赛博朋克</option>
               <option value="classic">经典</option>
               <option value="meme">搞笑</option>
-            </select>
-            <button 
-              className="legacy-btn" 
-              style={{ background: '#e67e22', color: '#fff', marginTop: 12 }} 
-              onClick={onModalClose}
-            >
+            </FormSelect>
+            <ModalButton $variant="primary" onClick={onModalClose}>
               取消
-            </button>
+            </ModalButton>
             {companyName ? (
-              <button 
-                className="legacy-btn" 
-                style={{ background: '#00fff7', color: '#222', marginTop: 12 }} 
+              <ModalButton 
+                $variant="secondary" 
                 onClick={() => { 
                   onCompanyNameChange(pendingCompanyName); 
                   onModalClose(); 
                 }}
               >
                 保存
-              </button>
+              </ModalButton>
             ) : (
-              <button 
-                className="legacy-btn" 
-                style={{ background: '#00fff7', color: '#222', marginTop: 12 }} 
+              <ModalButton 
+                $variant="secondary" 
                 onClick={() => { 
                   onCompanyNameChange(pendingCompanyName); 
                   onModalClose(); 
                 }}
               >
                 注册
-              </button>
+              </ModalButton>
             )}
-          </div>
-        </div>
+          </ModalContent>
+        </ModalOverlay>
       )}
 
       {/* AI Chat Modal */}
       {aiChatOpen && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100vw', 
-          height: '100vh', 
-          background: 'rgba(0,0,0,0.7)', 
-          zIndex: 9999, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}>
-          <div style={{ 
-            background: '#222', 
-            color: '#fff', 
-            borderRadius: 16, 
-            padding: 32, 
-            minWidth: 320, 
-            maxWidth: 480, 
-            boxShadow: '0 0 32px #00fff7cc', 
-            position: 'relative', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: 16 
-          }}>
-            <span 
-              style={{ 
-                position: 'absolute', 
-                top: 12, 
-                right: 18, 
-                fontSize: 22, 
-                cursor: 'pointer', 
-                color: '#ff00cc' 
-              }} 
+        <ModalOverlay>
+          <ModalContent $variant="ai">
+            <ModalCloseButton 
+              $color={theme.colors.cyber.secondary} 
               onClick={onAiChatClose}
             >
               ×
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-              <img 
+            </ModalCloseButton>
+            <AiPartnerHeader>
+              <AiPartnerAvatar 
                 src={aiPartnerData.avatar} 
                 alt="AI Partner" 
-                style={{ 
-                  width: 36, 
-                  height: 36, 
-                  borderRadius: '50%', 
-                  boxShadow: '0 0 8px #00fff7' 
-                }} 
               />
-              <span style={{ fontWeight: 700, color: '#00fff7' }}>{aiPartnerData.name}</span>
-            </div>
-            <div style={{ fontSize: 16, marginBottom: 8 }}>
+              <AiPartnerName>{aiPartnerData.name}</AiPartnerName>
+            </AiPartnerHeader>
+            <AiDescription>
               你可以向AI伙伴提问任何金融相关问题。
-            </div>
-            <input 
+            </AiDescription>
+            <AiInput 
               type="text" 
               value={aiInput} 
               onChange={e => onAiInputChange(e.target.value)} 
               placeholder="请输入你的问题..." 
-              style={{ 
-                padding: '0.7rem 1rem', 
-                borderRadius: 8, 
-                border: '1px solid #00fff7', 
-                fontSize: 16, 
-                marginBottom: 8, 
-                background: '#111', 
-                color: '#fff' 
-              }} 
             />
-            <button className="legacy-btn" style={{ marginBottom: 8 }} onClick={onAiAsk}>
+            <ModalButton $variant="primary" onClick={onAiAsk}>
               发送
-            </button>
+            </ModalButton>
             {aiResponse && (
-              <div style={{ 
-                background: '#333', 
-                color: '#00fff7', 
-                borderRadius: 8, 
-                padding: 12, 
-                fontSize: 16, 
-                marginTop: 8 
-              }}>
+              <AiResponse>
                 {aiResponse}
-              </div>
+              </AiResponse>
             )}
-          </div>
-        </div>
+          </ModalContent>
+        </ModalOverlay>
       )}
 
       {/* Dilemma Modal */}
       {dilemma && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100vw', 
-          height: '100vh', 
-          background: 'rgba(0,0,0,0.8)', 
-          zIndex: 999, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}>
-          <div style={{ 
-            background: '#222', 
-            color: '#fff', 
-            borderRadius: 16, 
-            padding: 32, 
-            minWidth: 320, 
-            maxWidth: 480, 
-            boxShadow: '0 0 32px #00fff7cc', 
-            position: 'relative' 
-          }}>
-            <h2 style={{ color: '#ff00cc', marginBottom: 16 }}>决策时刻</h2>
-            <div style={{ fontSize: 18, marginBottom: 24 }}>{dilemma}</div>
-            <div style={{ display: 'flex', gap: 16 }}>
+        <ModalOverlay>
+          <ModalContent $variant="dilemma">
+            <ModalTitle $color={theme.colors.cyber.secondary}>决策时刻</ModalTitle>
+            <DilemmaText>{dilemma}</DilemmaText>
+            <DilemmaOptions>
               {getDilemmaOptions(dilemma).map((opt, idx) => (
-                <button 
-                  className="legacy-btn" 
+                <ModalButton 
+                  $variant="primary" 
                   key={opt+idx} 
                   onClick={onDilemmaClose}
                 >
                   {opt}
-                </button>
+                </ModalButton>
               ))}
-            </div>
-          </div>
-        </div>
+            </DilemmaOptions>
+          </ModalContent>
+        </ModalOverlay>
       )}
 
       {/* Quiz Modal */}
       {quiz && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          width: '100vw', 
-          height: '100vh', 
-          background: 'rgba(0,0,0,0.8)', 
-          zIndex: 999, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}>
-          <div style={{ 
-            background: '#222', 
-            color: '#fff', 
-            borderRadius: 16, 
-            padding: 32, 
-            minWidth: 320, 
-            maxWidth: 480, 
-            boxShadow: '0 0 32px #00fff7cc', 
-            position: 'relative' 
-          }}>
-            <h2 style={{ color: '#00fff7', marginBottom: 16 }}>金融知识小测验</h2>
-            <div style={{ fontSize: 18, marginBottom: 24 }}>{quiz.question}</div>
-            <div style={{ display: 'flex', gap: 16 }}>
-              {quiz.options.map(opt => (
-                <button 
-                  className="legacy-btn" 
+        <ModalOverlay>
+          <ModalContent $variant="quiz">
+            <ModalTitle $color={theme.colors.cyber.primary}>金融知识小测验</ModalTitle>
+            <QuizQuestion>{quiz.question}</QuizQuestion>
+            <QuizOptions>
+              {quiz.options.map((opt: string) => (
+                <ModalButton 
+                  $variant="primary" 
                   key={opt} 
                   onClick={() => onQuizAnswer(opt)}
                 >
                   {opt}
-                </button>
+                </ModalButton>
               ))}
-            </div>
+            </QuizOptions>
             {quizAnswered && (
-              <div style={{ 
-                marginTop: 18, 
-                color: quizAnswered === quiz.answer ? '#27ae60' : '#e74c3c', 
-                fontWeight: 700 
-              }}>
+              <QuizResult $correct={quizAnswered === quiz.answer}>
                 {quizAnswered === quiz.answer ? '回答正确！获得知识大师徽章！' : '回答错误，再接再厉！'}
-              </div>
+              </QuizResult>
             )}
-          </div>
-        </div>
+          </ModalContent>
+        </ModalOverlay>
       )}
 
       {/* Endgame Modal */}
       {endgame && !showSummary && (
-        <div style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          width: '100%', 
-          height: '100%', 
-          background: 'rgba(0,0,0,0.85)', 
-          zIndex: 99, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}>
-          <img 
+        <EndgameOverlay>
+          <EndgameImage 
             src="https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif" 
             alt="victory" 
-            style={{ width: 180, height: 180, marginBottom: 24 }} 
           />
-          <h2 style={{ 
-            color: '#00fff7', 
-            fontSize: '2rem', 
-            textShadow: '0 0 16px #ff00cc' 
-          }}>
+          <EndgameTitle>
             传奇空岛重启成功！
-          </h2>
-          <div style={{ color: '#fff', marginTop: 12 }}>
+          </EndgameTitle>
+          <EndgameDescription>
             你已收集全部神器徽章，财富目标达成，成功渡过终极经济风暴！
-          </div>
-        </div>
+          </EndgameDescription>
+        </EndgameOverlay>
       )}
 
       {/* Summary Modal */}
       {showSummary && (
-        <div style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          width: '100%', 
-          height: '100%', 
-          background: 'rgba(0,0,0,0.95)', 
-          zIndex: 100, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          padding: 32 
-        }}>
-          <h2 style={{ color: '#ff00cc', fontSize: '2rem', marginBottom: 16 }}>冒险总结</h2>
-          <div style={{ color: '#fff', fontSize: '1.2rem', marginBottom: 16 }}>
-            <div>累计收益：{returns}%</div>
-            <div>获得徽章：{badges.join('、')}</div>
-            <div>教育收获：分散投资、长期主义、风险管理、冷静应对市场波动</div>
-          </div>
-          <button className="legacy-btn" onClick={onSummaryClose}>
+        <SummaryOverlay>
+          <SummaryTitle>冒险总结</SummaryTitle>
+          <SummaryContent>
+            <SummaryItem>累计收益：{returns}%</SummaryItem>
+            <SummaryItem>获得徽章：{badges.join('、')}</SummaryItem>
+            <SummaryItem>教育收获：分散投资、长期主义、风险管理、冷静应对市场波动</SummaryItem>
+          </SummaryContent>
+          <ModalButton $variant="primary" onClick={onSummaryClose}>
             再玩一次
-          </button>
-        </div>
+          </ModalButton>
+        </SummaryOverlay>
       )}
 
       {/* General Modal */}
       {showModal && modalContent !== 'edit' && (
-        <div 
-          style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
-            width: '100vw', 
-            height: '100vh', 
-            background: 'rgba(0,0,0,0.7)', 
-            zIndex: 999, 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center' 
-          }} 
-          onClick={onModalClose}
-        >
-          <div style={{ 
-            background: '#222', 
-            color: '#fff', 
-            borderRadius: 16, 
-            padding: 32, 
-            minWidth: 320, 
-            maxWidth: 480, 
-            boxShadow: '0 0 32px #00fff7cc', 
-            position: 'relative' 
-          }}>
-            <span 
-              style={{ 
-                position: 'absolute', 
-                top: 12, 
-                right: 18, 
-                fontSize: 22, 
-                cursor: 'pointer', 
-                color: '#ff00cc' 
-              }} 
+        <ModalOverlay onClick={onModalClose}>
+          <ModalContent $variant="general">
+            <ModalCloseButton 
+              $color={theme.colors.cyber.secondary} 
               onClick={onModalClose}
             >
               ×
-            </span>
-            <pre style={{ whiteSpace: 'pre-wrap', fontSize: 16 }}>{modalContent}</pre>
-          </div>
-        </div>
+            </ModalCloseButton>
+            <GeneralModalContent>{modalContent}</GeneralModalContent>
+          </ModalContent>
+        </ModalOverlay>
       )}
     </>
   );
