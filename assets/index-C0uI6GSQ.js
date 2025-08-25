@@ -245,6 +245,8 @@ import{r as ur,g as Vr,a as Zr}from"./vendor-D3F3s8fL.js";(function(){const t=do
   position: relative;
   box-shadow: 0 2px 8px ${a.colors.cyber.primary}33;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 `,Go=l.div`
   display: flex;
   align-items: center;
@@ -274,6 +276,7 @@ import{r as ur,g as Vr,a as Zr}from"./vendor-D3F3s8fL.js";(function(){const t=do
   transition: width 0.3s;
 `,Qo=l.div`
   height: 36px;
+  width: 100%;
   background: linear-gradient(90deg, #222, #444);
   border-radius: 6px;
   margin-bottom: 4px;
@@ -281,10 +284,12 @@ import{r as ur,g as Vr,a as Zr}from"./vendor-D3F3s8fL.js";(function(){const t=do
   align-items: center;
   justify-content: center;
   color: ${a.colors.cyber.primary};
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   box-shadow: 0 0 6px ${a.colors.cyber.primary}99;
   transition: all ${a.transitions.fast};
+  text-align: center;
+  white-space: nowrap;
 
   &:hover {
     box-shadow: 0 0 8px ${a.colors.cyber.primary};
@@ -317,7 +322,7 @@ import{r as ur,g as Vr,a as Zr}from"./vendor-D3F3s8fL.js";(function(){const t=do
 
 此资产代表：${d.theme==="forest"?"科技股":d.theme==="snow"?"债券":d.theme==="volcano"?"商品":"加密货币"}
 
-风险提示: ${(n[d.key]||0)>60?"集中风险":"分散配置"}`)},children:s.jsx("span",{children:"点击查看 Mini Chart"})})]},d.key))}),s.jsxs(Ho,{children:["总分配: ",s.jsxs("strong",{children:[Object.values(n).reduce((d,f)=>d+f,0),"%"]})]})]}),s.jsxs(Uo,{className:"legacy-card",children:[s.jsxs(Jo,{children:[s.jsx(Ko,{children:"当日收益"}),s.jsx(Vo,{children:o!==null?`${o}%`:'请点击"下一天"模拟收益'})]}),s.jsxs(Zo,{children:[s.jsx(cr,{className:"legacy-btn",onClick:c,children:"下一天"}),s.jsx(cr,{className:"legacy-btn legacy-reset",onClick:u,children:"重置游戏"})]})]})]})},lr=l.button`
+风险提示: ${(n[d.key]||0)>60?"集中风险":"分散配置"}`)},children:"点击查看 Mini Chart"})]},d.key))}),s.jsxs(Ho,{children:["总分配: ",s.jsxs("strong",{children:[Object.values(n).reduce((d,f)=>d+f,0),"%"]})]})]}),s.jsxs(Uo,{className:"legacy-card",children:[s.jsxs(Jo,{children:[s.jsx(Ko,{children:"当日收益"}),s.jsx(Vo,{children:o!==null?`${o}%`:'请点击"下一天"模拟收益'})]}),s.jsxs(Zo,{children:[s.jsx(cr,{className:"legacy-btn",onClick:c,children:"下一天"}),s.jsx(cr,{className:"legacy-btn legacy-reset",onClick:u,children:"重置游戏"})]})]})]})},lr=l.button`
   position: fixed;
   bottom: ${({$type:e})=>e==="wheel"?"110px":"32px"};
   right: 32px;
