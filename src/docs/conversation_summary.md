@@ -156,7 +156,7 @@ App.tsx (25行)
 ## 📚 **相关文档**
 
 - **项目结构说明**: `PROJECT_STRUCTURE.md`
-- **游戏设计文档**: `LegacyGuardians.md`
+- **游戏设计文档**: `NuWealth – Legacy Guardians - 游戏设计及计划.md` (中文) 和 `Legacy_Guardians_Game_Design_Document_EN.md` (英文)
 - **开发规则**: `src/rules/` 目录
 - **类型定义**: `src/types/index.ts`
 
