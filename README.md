@@ -54,7 +54,7 @@ npm run dev
 - [团队协作开发指南](src/rules/COLLABORATION_GUIDE.md) - 协作原则、分支管理、代码规范
 - [需求文档模块划分](src/docs/REQUIREMENTS_MODULES.md) - 14个功能模块的详细划分和开发任务
 - [开发者入门指南](src/docs/DEVELOPER_ONBOARDING.md) - 新开发者快速上手指南
-- [团队协作总结](TEAM_COLLABORATION_SUMMARY.md) - 完整的协作体系概览
+- [团队协作总结](src/docs/TEAM_COLLABORATION_SUMMARY.md) - 完整的协作体系概览
 
 ### 📋 **开发规则和规范**
 - [开发规则总览](src/rules/README.md) - 所有开发规则的索引
@@ -63,9 +63,9 @@ npm run dev
 - [文档更新规则](src/rules/DOCUMENTATION_RULES.md) - 强制要求代码变更同步更新文档
 
 ### 🔧 **项目配置和部署**
-- [项目结构说明](PROJECT_STRUCTURE.md) - 详细的文件结构说明
-- [部署指南](DEPLOYMENT.md) - GitHub Pages部署说明
-- [重构总结](REFACTORING_SUMMARY.md) - 项目重构历程和架构演进
+- [项目结构说明](src/docs/PROJECT_STRUCTURE.md) - 详细的文件结构说明
+- [部署指南](src/docs/DEPLOYMENT.md) - GitHub Pages部署说明
+- [重构总结](src/docs/conversation_summary.md) - 项目重构历程和架构演进
 
 ## 🌟 **核心特性**
 
@@ -156,7 +156,7 @@ npm run deploy
 
 ### 🚀 开始开发
 - [开发者入门指南](src/docs/DEVELOPER_ONBOARDING.md)
-- [项目结构说明](PROJECT_STRUCTURE.md)
+- [项目结构说明](src/docs/PROJECT_STRUCTURE.md)
 - [环境配置](README.md#快速开始)
 
 ### 👥 团队协作
@@ -166,8 +166,8 @@ npm run deploy
 
 ### 📚 项目文档
 - [游戏设计文档](src/docs/)
-- [部署指南](DEPLOYMENT.md)
-- [重构总结](REFACTORING_SUMMARY.md)
+- [部署指南](src/docs/DEPLOYMENT.md)
+- [重构总结](src/docs/conversation_summary.md)
 
 ### 🔧 技术参考
 - [TypeScript规范](src/rules/TYPESCRIPT_CODING_STANDARDS.md)
