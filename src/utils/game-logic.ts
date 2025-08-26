@@ -1,74 +1,122 @@
 // Legacy Guardians - Game Logic Utilities
 
 import { GameState, GameHistory, MarketEvent, Asset } from '../types';
-import { GAME_CONFIG, BADGE_REQUIREMENTS } from '../constants/game-config';
+import { GAME_CONFIG } from '../constants/game-config';
+
+// Simplified asset correlation matrix
+const CORRELATIONS: { [key: string]: { [key: string]: number } } = {
+        tech: { tech: 1, bond: -0.2, esg: 0.3, gold: 0.1, stablecoin: 0, yield: 0.2, crypto: 0.6 },
+        bond: { tech: -0.2, bond: 1, esg: 0.1, gold: 0, stablecoin: 0.1, yield: -0.1, crypto: -0.3 },
+        esg: { tech: 0.3, bond: 0.1, esg: 1, gold: 0.2, stablecoin: 0.1, yield: 0.2, crypto: 0.3 },
+        gold: { tech: 0.1, bond: 0, esg: 0.2, gold: 1, stablecoin: 0, yield: 0.1, crypto: 0.2 },
+        stablecoin: { tech: 0, bond: 0.1, esg: 0.1, gold: 0, stablecoin: 1, yield: 0, crypto: 0 },
+        yield: { tech: 0.2, bond: -0.1, esg: 0.2, gold: 0.1, stablecoin: 0, yield: 1, crypto: 0.2 },
+        crypto: { tech: 0.6, bond: -0.3, esg: 0.3, gold: 0.2, stablecoin: 0, yield: 0.2, crypto: 1 }
+};
 
 /**
- * Calculate daily returns based on asset weights and market events
+ * Calculate daily portfolio metrics including return, volatility and drawdown
  */
 export function calculateDailyReturns(
-	weights: { [key: string]: number },
-	assets: Asset[],
-	event: MarketEvent | null
-): number {
-	let dailyReturn = 0;
-	
-	assets.forEach(asset => {
-		let baseReturn = asset.expectedReturn;
-		
-		// Apply event impact if asset is affected
-		if (event && event.affected.includes(asset.key)) {
-			const range = event.impactRange[asset.key];
-			if (Array.isArray(range) && range.length === 2) {
-				const [min, max] = range;
-				const impact = min + Math.random() * (max - min);
-				baseReturn += impact;
-			}
-		}
-		
-		// Calculate weighted return
-		dailyReturn += (weights[asset.key] / 100) * baseReturn;
-	});
-	
-	return Number((dailyReturn * 100).toFixed(2));
+        weights: { [key: string]: number },
+        assets: Asset[],
+        event: MarketEvent | null,
+        portfolioValue: number,
+        peakValue: number
+): { returns: number; volatility: number; drawdown: number; portfolioValue: number; peakValue: number } {
+        let dailyReturn = 0;
+        const assetReturns: { [key: string]: number } = {};
+
+        // Calculate base returns with simple volatility noise and event impact
+        assets.forEach(asset => {
+                let baseReturn = asset.expectedReturn;
+
+                if (event && event.affected.includes(asset.key)) {
+                        const range = event.impactRange[asset.key];
+                        if (Array.isArray(range) && range.length === 2) {
+                                const [min, max] = range;
+                                const impact = min + Math.random() * (max - min);
+                                baseReturn += impact;
+                        }
+                }
+
+                // Add random noise based on asset volatility
+                baseReturn += asset.volatility * (Math.random() - 0.5);
+
+                assetReturns[asset.key] = baseReturn;
+                dailyReturn += (weights[asset.key] / 100) * baseReturn;
+        });
+
+        // Portfolio volatility using correlations
+        let variance = 0;
+        for (let i = 0; i < assets.length; i++) {
+                const ai = assets[i];
+                const wi = (weights[ai.key] || 0) / 100;
+                for (let j = i; j < assets.length; j++) {
+                        const aj = assets[j];
+                        const wj = (weights[aj.key] || 0) / 100;
+                        const corr = CORRELATIONS[ai.key]?.[aj.key] ?? 0;
+                        const cov = ai.volatility * aj.volatility * corr;
+                        if (i === j) {
+                                variance += wi * wj * cov;
+                        } else {
+                                variance += 2 * wi * wj * cov;
+                        }
+                }
+        }
+        const volatility = Math.sqrt(Math.max(variance, 0)) * 100;
+
+        // Update portfolio value and drawdown
+        const newPortfolioValue = portfolioValue * (1 + dailyReturn);
+        const newPeakValue = Math.max(peakValue, newPortfolioValue);
+        const drawdown = ((newPortfolioValue - newPeakValue) / newPeakValue) * 100;
+
+        return {
+                returns: Number((dailyReturn * 100).toFixed(2)),
+                volatility: Number(volatility.toFixed(2)),
+                drawdown: Number(drawdown.toFixed(2)),
+                portfolioValue: newPortfolioValue,
+                peakValue: newPeakValue
+        };
 }
 
 /**
  * Check if player should receive new badges
  */
 export function checkBadgeEligibility(
-	weights: { [key: string]: number },
-	history: GameHistory[],
-	currentReturns: number,
-	existingBadges: string[]
+        weights: { [key: string]: number },
+        history: GameHistory[],
+        currentReturns: number,
+        existingBadges: string[]
 ): string[] {
-	const newBadges: string[] = [];
-	
-	// Check diversifier badge
-	if (Object.values(weights).filter(w => w > 0).length >= BADGE_REQUIREMENTS.DIVERSIFIER) {
-		if (!existingBadges.includes('分散者')) {
-			newBadges.push('分散者');
-		}
-	}
-	
-	// Check long-term vision badge
-	if (history.length >= 2 && 
-		history.slice(-2).every(h => h.returns > 0) && 
-		currentReturns > 0) {
-		if (!existingBadges.includes('长远目光')) {
-			newBadges.push('长远目光');
-		}
-	}
-	
-	// Check risk manager badge
-	if (Object.values(weights).some(w => w > BADGE_REQUIREMENTS.RISK_MANAGER) && 
-		currentReturns > 0) {
-		if (!existingBadges.includes('风险管理者')) {
-			newBadges.push('风险管理者');
-		}
-	}
-	
-	return newBadges;
+        const newBadges: string[] = [];
+        const requirements = GAME_CONFIG.BADGE_REQUIREMENTS;
+
+        // Check diversifier badge
+        if (Object.values(weights).filter(w => w > 0).length >= requirements.DIVERSIFIER) {
+                if (!existingBadges.includes('分散者')) {
+                        newBadges.push('分散者');
+                }
+        }
+
+        // Check long-term vision badge
+        if (history.length >= 2 &&
+                history.slice(-2).every(h => h.returns > 0) &&
+                currentReturns > 0) {
+                if (!existingBadges.includes('长远目光')) {
+                        newBadges.push('长远目光');
+                }
+        }
+
+        // Check risk manager badge
+        if (Object.values(weights).some(w => w > requirements.RISK_MANAGER) &&
+                currentReturns > 0) {
+                if (!existingBadges.includes('风险管理者')) {
+                        newBadges.push('风险管理者');
+                }
+        }
+
+        return newBadges;
 }
 
 /**

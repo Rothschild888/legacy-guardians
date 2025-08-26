@@ -14,7 +14,7 @@ export const GameLayout: React.FC = () => {
     // State
     companyName, avatar, theme, coins, gems, wheelOpen, wheelResult, wheelUsed,
     aiChatOpen, aiInput, aiResponse, dilemma, quiz, quizAnswered, endgame,
-    showSummary, history, weights, day, returns, event, task, badges,
+    showSummary, history, weights, day, returns, volatility, drawdown, event, task, badges,
     showModal, modalContent, pendingCompanyName, avatarOptions,
     allowedAssets, pendingCoinRequest, aiPersonality, aiEnabled,
 
@@ -72,6 +72,7 @@ export const GameLayout: React.FC = () => {
         
         <GameArea
           task={task} event={event} artifactsData={artifactsData} weights={weights} returns={returns}
+          volatility={volatility} drawdown={drawdown}
           onWeightChange={handleWeightChange} onNextDay={nextDay} onResetGame={resetGame}
           onShowModal={(content) => { setShowModal(true); setModalContent(content); }}
         />

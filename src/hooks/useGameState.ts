@@ -7,7 +7,9 @@ import { badges as badgeData } from '../modules/badges';
 import { dilemmas as dilemmaQuestions } from '../modules/dilemmas';
 import { handleSpinWheel as spinWheel } from '../modules/spinWheel';
 import aiPersonalities from '../constants/ai-personalities.json';
+import { assets as assetsData } from '../modules/assets';
 import { getAiResponse } from '../utils/ai';
+import { calculateDailyReturns } from '../utils/game-logic';
 
 export const useGameState = () => {
   // Company/Avatar Customization
@@ -46,6 +48,10 @@ export const useGameState = () => {
   const [weights, setWeights] = useState<{ [key: string]: number }>({ tech: 16, bond: 16, gold: 16, crypto: 16, esg: 16, stablecoin: 10, yield: 10 });
   const [day, setDay] = useState(0);
   const [returns, setReturns] = useState<number | null>(null);
+  const [volatility, setVolatility] = useState<number | null>(null);
+  const [drawdown, setDrawdown] = useState<number | null>(null);
+  const [portfolioValue, setPortfolioValue] = useState(1);
+  const [peakValue, setPeakValue] = useState(1);
   const [event, setEvent] = useState<any>(null);
   const [task, setTask] = useState<any>(tasksData[0]);
   const [badges, setBadges] = useState<string[]>([]);
@@ -120,6 +126,10 @@ export const useGameState = () => {
     setTask(tasksData[0]);
     setBadges([]);
     setHistory([]);
+    setVolatility(null);
+    setDrawdown(null);
+    setPortfolioValue(1);
+    setPeakValue(1);
     setQuizActive(false);
     setQuizResult('');
     setCoins(100);
@@ -192,13 +202,14 @@ export const useGameState = () => {
     setTask(tasksData[taskIdx]);
     setDay(day + 1);
 
-    // Calculate returns (simplified for now)
-    let dailyReturn = 0;
-    // This would need the actual asset data to calculate properly
-    dailyReturn = Math.random() * 20 - 10; // Random return between -10% and +10%
-    
-    const dayReturn = Number((dailyReturn * 100).toFixed(2));
+    // Calculate returns using asset data
+    const result = calculateDailyReturns(weights, assetsData, ev, portfolioValue, peakValue);
+    const dayReturn = result.returns;
     setReturns(dayReturn);
+    setVolatility(result.volatility);
+    setDrawdown(result.drawdown);
+    setPortfolioValue(result.portfolioValue);
+    setPeakValue(result.peakValue);
 
     // Update coins/gems based on returns
     setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
@@ -231,7 +242,7 @@ export const useGameState = () => {
 
     // Track history
     setHistory([...history, { day: day + 1, weights: { ...weights }, event: ev, returns: dayReturn }]);
-  }, [day, returns, badges, weights, history, askedDilemmas]);
+  }, [day, returns, badges, weights, history, askedDilemmas, portfolioValue, peakValue]);
 
   return {
     // State
@@ -255,6 +266,8 @@ export const useGameState = () => {
     weights,
     day,
     returns,
+    volatility,
+    drawdown,
     event,
     task,
     badges,
@@ -295,6 +308,8 @@ export const useGameState = () => {
     setWeights,
     setDay,
     setReturns,
+    setVolatility,
+    setDrawdown,
     setEvent,
     setTask,
     setBadges,

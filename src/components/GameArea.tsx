@@ -8,6 +8,8 @@ interface GameAreaProps {
   artifactsData: any[];
   weights: { [key: string]: number };
   returns: number | null;
+  volatility: number | null;
+  drawdown: number | null;
   onWeightChange: (key: string, value: number) => void;
   onNextDay: () => void;
   onResetGame: () => void;
@@ -223,6 +225,8 @@ export const GameArea: React.FC<GameAreaProps> = ({
   artifactsData,
   weights,
   returns,
+  volatility,
+  drawdown,
   onWeightChange,
   onNextDay,
   onResetGame,
@@ -355,6 +359,16 @@ export const GameArea: React.FC<GameAreaProps> = ({
           <ReturnsValue>
             {returns !== null ? `${returns}%` : '请点击"下一天"模拟收益'}
           </ReturnsValue>
+          {volatility !== null && (
+            <div>
+              波动率: {volatility}%{volatility > 20 ? ' ⚠️ 波动较高' : ''}
+            </div>
+          )}
+          {drawdown !== null && (
+            <div>
+              回撤: {drawdown}%{drawdown < -20 ? ' ⚠️ 回撤严重' : ''}
+            </div>
+          )}
         </ReturnsInfo>
         
         <ActionButtons>
