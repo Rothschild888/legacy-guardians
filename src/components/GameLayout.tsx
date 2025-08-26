@@ -76,7 +76,7 @@ export const GameLayout: React.FC = () => {
           lastTaskResult={lastTaskResult}
           event={event}
           history={history}
-          artifactsData={artifactsData}
+          artifactsData={artifactsData.filter(a => allowedAssets.includes(a.key))}
           weights={weights}
           returns={returns}
           volatility={volatility}
