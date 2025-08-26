@@ -18,6 +18,8 @@ export const useGameState = () => {
   // Resource Management
   const [coins, setCoins] = useState(100);
   const [gems, setGems] = useState(5);
+  const [stars, setStars] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [allowedAssets, setAllowedAssets] = useState<string[]>(['tech','bond','gold','crypto','esg','stablecoin','yield']);
   const [pendingCoinRequest, setPendingCoinRequest] = useState<number | null>(null);
 
@@ -89,6 +91,15 @@ export const useGameState = () => {
     );
   }, []);
 
+  const addStars = useCallback((count: number = 1) => {
+    setStars(prev => {
+      const newStars = prev + count;
+      const newProgress = Math.min(100, Math.floor(newStars / 5) * 25);
+      setProgress(newProgress);
+      return newStars;
+    });
+  }, []);
+
 
   // Handle spin wheel
   const handleSpinWheel = useCallback(() => {
@@ -124,6 +135,8 @@ export const useGameState = () => {
     setQuizResult('');
     setCoins(100);
     setGems(5);
+    setStars(0);
+    setProgress(0);
     setEndgame(false);
     setShowSummary(false);
   }, []);
@@ -204,6 +217,8 @@ export const useGameState = () => {
     setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
     if (dayReturn > 50) setGems(g => g + 1);
 
+    if (dayReturn > 0) addStars(1);
+
     // Badge logic
     let newBadges = [...badges];
     if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
@@ -240,6 +255,8 @@ export const useGameState = () => {
     theme,
     coins,
     gems,
+    stars,
+    progress,
     wheelOpen,
     wheelResult,
     wheelUsed,
@@ -278,6 +295,8 @@ export const useGameState = () => {
     setTheme,
     setCoins,
     setGems,
+    setStars,
+    setProgress,
     setWheelOpen,
     setWheelResult,
     setWheelUsed,
@@ -313,6 +332,7 @@ export const useGameState = () => {
     requestCoins,
     approveCoinRequest,
     rejectCoinRequest,
-    toggleAllowedAsset
+    toggleAllowedAsset,
+    addStars
   };
 };

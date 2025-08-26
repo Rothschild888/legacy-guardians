@@ -8,6 +8,7 @@ interface SidebarProps {
   badgesData: any[];
   badges: string[];
   history: any[];
+  stars: number;
   onBadgeClick: (badge: any) => void;
 }
 
@@ -78,6 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   badgesData,
   badges,
   history,
+  stars,
   onBadgeClick
 }) => {
   return (
@@ -101,6 +103,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             return aiPartnerData.feedbackTemplates[0].replace('{asset}', '资产').replace('{percent}', '分散');
           })()}
         </AiPartnerDescription>
+      </Section>
+
+      {/* Stars Section */}
+      <Section>
+        <SectionTitle $color={theme.colors.meme.accent}>守护之星</SectionTitle>
+        <div style={{ color: theme.colors.cyber.text, fontWeight: 700 }}>⭐ {stars}</div>
       </Section>
 
       {/* Badges Section */}
