@@ -10,7 +10,8 @@ import { handleSpinWheel as spinWheel } from '../modules/spinWheel';
 import aiPersonalities from '../constants/ai-personalities.json';
 import { assets as assetsData } from '../modules/assets';
 import { getAiResponse } from '../utils/ai';
-import { calculateDailyReturns } from '../utils/game-logic';
+import { calculateDailyReturns, generateRandomEvent, generateRandomDilemma, generateRandomQuiz, checkEasterEgg } from '../utils/game-logic';
+import { GAME_CONFIG } from '../constants/game-config';
 
 // Task objectives and rewards
 const taskGoals: {
@@ -306,7 +307,7 @@ export const useGameState = () => {
     }
 
     // Fun event: meme or surprise
-    if (Math.random() < 0.15) {
+    if (checkEasterEgg()) {
       setShowModal(true);
       setModalContent('🎉 彩蛋事件：你发现了一只会跳舞的柴犬！\n\n奖励：收益+5%，心情+100！');
       setReturns(r => (r !== null ? r + 5 : 5));
@@ -317,22 +318,19 @@ export const useGameState = () => {
     setWheelUsed(false);
 
     // Randomly trigger a dilemma or quiz
-    if (Math.random() < 0.4) {
-      const available = dilemmaQuestions.map((_, i) => i).filter(i => !completedDilemmas.includes(i));
-      if (available.length > 0) {
-        const idx = available[Math.floor(Math.random() * available.length)];
-        setDilemma(dilemmaQuestions[idx]);
+    const randomDilemma = generateRandomDilemma(dilemmaQuestions, completedDilemmas);
+    if (randomDilemma) {
+      const idx = dilemmaQuestions.indexOf(randomDilemma);
+      if (idx !== -1) {
+        setDilemma(randomDilemma);
         setCurrentDilemmaIndex(idx);
         return;
       }
     }
 
-    if (Math.random() < 0.2) {
-      setQuiz({
-        question: '分散投资的最大好处是什么？',
-        options: ['降低风险', '增加波动', '提高单一资产收益'],
-        answer: '降低风险'
-      });
+    const randomQuiz = generateRandomQuiz(GAME_CONFIG.QUIZ_QUESTIONS);
+    if (randomQuiz) {
+      setQuiz(randomQuiz);
       return;
     }
 
@@ -347,12 +345,11 @@ export const useGameState = () => {
     }
 
     // Pick a random event
-    const eventIdx = Math.floor(Math.random() * eventsData.length);
-    const ev = eventsData[eventIdx];
+    const ev = generateRandomEvent(eventsData);
     setEvent(ev);
 
     // If event has choices, wait for user decision
-    if (ev.choices && ev.choices.length > 0) {
+    if (ev && ev.choices && ev.choices.length > 0) {
       return;
     }
 
@@ -413,8 +410,8 @@ export const useGameState = () => {
       {
         day: day + 1,
         weights: { ...weights },
-        eventId: ev.id,
-        effect: ev.description,
+        eventId: ev ? ev.id : undefined,
+        effect: ev ? ev.description : undefined,
         returns: dayReturn,
         taskId: task.id,
         taskCompleted,
