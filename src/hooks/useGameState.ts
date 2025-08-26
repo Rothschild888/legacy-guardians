@@ -2,8 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import tasksData from '../constants/tasks.json';
-import eventsData from '../constants/events.json';
-import badgesData from '../constants/badges.json';
+import { events as eventsData } from '../modules/events';
+import { badges as badgeData } from '../modules/badges';
+import { dilemmas as dilemmaQuestions } from '../modules/dilemmas';
+import { handleSpinWheel as spinWheel } from '../modules/spinWheel';
 
 export const useGameState = () => {
   // Company/Avatar Customization
@@ -51,15 +53,6 @@ export const useGameState = () => {
   const [quizActive, setQuizActive] = useState(false);
   const [quizResult, setQuizResult] = useState('');
 
-  // Dilemma questions pool
-  const dilemmaQuestions = [
-    '市场波动加剧，你会选择？',
-    '突发利空消息，你会选择？',
-    '资产暴涨，你会选择？',
-    '行业政策变化，你会选择？',
-    '朋友推荐新资产，你会选择？'
-  ];
-
   // Avatar options
   const avatarOptions = [
     'https://cdn-icons-png.flaticon.com/512/616/616494.png',
@@ -70,60 +63,17 @@ export const useGameState = () => {
     'https://cdn-icons-png.flaticon.com/512/616/616408.png'
   ];
 
-  // Extra events
-  const extraEvents = [
-    {
-      id: 3,
-      name: '科技牛市',
-      affected: ['tech', 'crypto'],
-      impactRange: { tech: [0.05, 0.15], crypto: [0.03, 0.10] },
-      probability: 0.12,
-      description: '科技股和加密货币迎来牛市，价格大幅上涨。'
-    },
-    {
-      id: 4,
-      name: '债券利好',
-      affected: ['bond'],
-      impactRange: { bond: [0.02, 0.08] },
-      probability: 0.10,
-      description: '债券市场利好，收益提升。'
-    },
-    {
-      id: 5,
-      name: '商品暴跌',
-      affected: ['commodity'],
-      impactRange: { commodity: [-0.15, -0.05] },
-      probability: 0.09,
-      description: '商品市场暴跌，注意分散风险。'
-    },
-    {
-      id: 6,
-      name: '加密波动',
-      affected: ['crypto'],
-      impactRange: { crypto: [-0.20, 0.20] },
-      probability: 0.15,
-      description: '加密货币剧烈波动，风险与机会并存。'
-    }
-  ];
-
-  const allEvents = [...eventsData, ...extraEvents];
 
   // Handle spin wheel
   const handleSpinWheel = useCallback(() => {
-    const outcomes = [
-      { label: '收益+10%', effect: () => setReturns(r => (r !== null ? r + 10 : 10)), color: '#27ae60' },
-      { label: '收益-10%', effect: () => setReturns(r => (r !== null ? r - 10 : -10)), color: '#e74c3c' },
-      { label: '获得分散者徽章', effect: () => setBadges(b => b.includes('分散者') ? b : [...b, '分散者']), color: '#00fff7' },
-      { label: '风险提升', effect: () => setReturns(r => (r !== null ? r - 5 : -5)), color: '#ff00cc' },
-      { label: '知识大师徽章', effect: () => setBadges(b => b.includes('知识大师') ? b : [...b, '知识大师']), color: '#f6d365' },
-      { label: '无变化', effect: () => {}, color: '#888' }
-    ];
-    const idx = Math.floor(Math.random() * outcomes.length);
-    setWheelResult(outcomes[idx].label);
-    outcomes[idx].effect();
-    setWheelUsed(true);
-    setTimeout(() => { setWheelOpen(false); setWheelResult(null); }, 1800);
-  }, []);
+    spinWheel({
+      setReturns,
+      setBadges,
+      setWheelResult,
+      setWheelUsed,
+      setWheelOpen,
+    });
+  }, [setReturns, setBadges, setWheelResult, setWheelUsed, setWheelOpen]);
 
   // Handle AI ask
   const handleAiAsk = useCallback(async () => {
@@ -193,10 +143,10 @@ export const useGameState = () => {
 
     // Randomly trigger a dilemma or quiz
     if (Math.random() < 0.4) {
-      const available = dilemmaQuestions.map((q, i) => i).filter(i => !askedDilemmas.includes(i));
+      const available = dilemmaQuestions.map((_, i) => i).filter(i => !askedDilemmas.includes(i));
       if (available.length > 0) {
         const idx = available[Math.floor(Math.random() * available.length)];
-        setDilemma(dilemmaQuestions[idx]);
+        setDilemma(dilemmaQuestions[idx].text);
         setAskedDilemmas(prev => [...prev, idx]);
         return;
       }
@@ -213,7 +163,7 @@ export const useGameState = () => {
 
     // Endgame trigger
     const wealthGoal = 300;
-    const allBadges = badgesData.map(b => b.name.replace('徽章',''));
+    const allBadges = badgeData.map(b => b.name.replace('徽章',''));
     const hasAllBadges = allBadges.every(b => badges.includes(b));
     if (returns !== null && returns >= wealthGoal && hasAllBadges) {
       setEndgame(true);
@@ -222,8 +172,8 @@ export const useGameState = () => {
     }
 
     // Pick a random event
-    const eventIdx = Math.floor(Math.random() * allEvents.length);
-    const ev = allEvents[eventIdx];
+    const eventIdx = Math.floor(Math.random() * eventsData.length);
+    const ev = eventsData[eventIdx];
     setEvent(ev);
 
     // Pick next task

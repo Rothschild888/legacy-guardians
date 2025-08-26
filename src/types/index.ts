@@ -1,12 +1,15 @@
 // Legacy Guardians - Type Definitions
 
+import type { Dispatch, SetStateAction } from 'react';
+
 // Asset Types
 export interface Asset {
-	key: string;
-	name: string;
-	expectedReturn: number;
-	volatility: number;
-	description: string;
+        key: string;
+        name: string;
+        expectedReturn: number;
+        volatility: number;
+        description: string;
+        icon?: string;
 }
 
 // Artifact Types
@@ -31,22 +34,40 @@ export interface Task {
 
 // Event Types
 export interface MarketEvent {
-	id: number;
-	name: string;
-	description: string;
-	affected: string[];
-	impactRange: { [key: string]: [number, number] };
-	probability: number;
-	choices?: string[];
+        id: number;
+        name: string;
+        description: string;
+        affected: string[];
+        impactRange: { [key: string]: [number, number] };
+        probability: number;
+        choices?: string[];
+        icon?: string;
 }
 
 // Badge Types
 export interface Badge {
-	key: string;
-	name: string;
-	desc: string;
-	requirement: string;
-	category: 'diversification' | 'risk-management' | 'knowledge' | 'achievement';
+        key: string;
+        name: string;
+        desc: string;
+        requirement?: string;
+        category?: 'diversification' | 'risk-management' | 'knowledge' | 'achievement';
+        icon?: string;
+}
+
+// Dilemma Types
+export interface Dilemma {
+        text: string;
+        icon?: string;
+}
+
+// Spin Wheel Types
+export interface SpinWheelOutcome {
+        label: string;
+        color: string;
+        effect: (
+                setReturns: Dispatch<SetStateAction<number | null>>,
+                setBadges: Dispatch<SetStateAction<string[]>>
+        ) => void;
 }
 
 // AI Partner Types
