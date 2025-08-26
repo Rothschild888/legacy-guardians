@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { theme } from '../styles/theme';
+import { ParentReport } from './ParentReport';
+import { exportReport } from '../utils/report';
+import type { GameHistory } from '../types';
 
 interface ParentControlPanelProps {
   pendingRequest: number | null;
@@ -8,6 +11,9 @@ interface ParentControlPanelProps {
   aiEnabled: boolean;
   aiPersonality: string;
   aiPersonalities: { id: string; name: string; riskTolerance: 'low' | 'medium' | 'high' }[];
+  history: GameHistory[];
+  badges: string[];
+  aiNote?: string;
   onApprove: () => void;
   onReject: () => void;
   onToggleAsset: (asset: string) => void;
@@ -78,6 +84,9 @@ export const ParentControlPanel: React.FC<ParentControlPanelProps> = ({
   aiEnabled,
   aiPersonality,
   aiPersonalities,
+  history,
+  badges,
+  aiNote,
   onApprove,
   onReject,
   onToggleAsset,
@@ -100,6 +109,8 @@ export const ParentControlPanel: React.FC<ParentControlPanelProps> = ({
     medium: '平衡',
     high: '进取'
   };
+
+  const reportRef = useRef<HTMLDivElement>(null);
 
   return (
     <Overlay>
@@ -151,6 +162,15 @@ export const ParentControlPanel: React.FC<ParentControlPanelProps> = ({
               ))}
             </Select>
           </AssetsList>
+        </div>
+
+        <div>
+          <h4>报告</h4>
+          <ParentReport ref={reportRef} history={history} badges={badges} allowedAssets={allowedAssets} aiNote={aiNote} />
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <button className="legacy-btn" onClick={() => reportRef.current && exportReport(reportRef.current, 'pdf')}>下载PDF</button>
+            <button className="legacy-btn" onClick={() => reportRef.current && exportReport(reportRef.current, 'png')}>下载PNG</button>
+          </div>
         </div>
       </Panel>
     </Overlay>

@@ -85,6 +85,9 @@ export const GameLayout: React.FC = () => {
           aiEnabled={aiEnabled}
           aiPersonality={aiPersonality}
           aiPersonalities={aiPersonalities}
+          history={history}
+          badges={badges}
+          aiNote={aiResponse}
           onApprove={approveCoinRequest}
           onReject={rejectCoinRequest}
           onToggleAsset={toggleAllowedAsset}
