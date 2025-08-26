@@ -83,8 +83,8 @@ legacy-guardians/           ← 项目根目录
 ### **已移动的文件**
 - `legacy-ui.css` → `src/styles/`
 - `legacy-cyberpunk.css` → `src/styles/`
-- `badges.json` → `src/constants/`
-- `ai-partner.json` → `src/constants/`
+- `badges.json` → `src/modules/badges.ts`
+- `ai-personalities.json` → `src/constants/`
 - `artifacts.json` → `src/constants/`
 - `data/*.json` → `src/constants/`
 

@@ -44,14 +44,14 @@ Legacy Guardians 游戏系统
 ##### 核心文件
 - `src/components/GameArea.tsx` - 资产分配界面
 - `src/hooks/useGameState.ts` - 资产状态管理
-- `src/constants/assets.json` - 资产配置
+- `src/modules/assets.ts` - 资产配置
 - `src/utils/game-logic.ts` - 游戏逻辑
 
 ##### 开发步骤
 **Step 1 (周一上午)**: 基础资产类型定义
 - [ ] 定义7种资产类型的数据结构
 - [ ] 实现资产权重分配基础逻辑
-- [ ] 创建资产配置JSON文件
+- [ ] 创建资产定义模块
 
 **Step 2 (周一下午)**: 收益率计算系统
 - [ ] 实现权重总和100%验证
@@ -140,7 +140,7 @@ Legacy Guardians 游戏系统
 - 事件历史记录
 
 ##### 核心文件
-- `src/constants/events.json` - 事件配置
+- `src/modules/events.ts` - 事件配置
 - `src/components/GameArea.tsx` - 事件显示
 - `src/hooks/useGameState.ts` - 事件状态
 
@@ -148,7 +148,7 @@ Legacy Guardians 游戏系统
 **Step 1 (周三上午)**: 事件基础系统
 - [ ] 设计事件数据结构
 - [ ] 实现随机事件生成
-- [ ] 创建事件配置JSON
+- [ ] 创建事件定义模块
 
 **Step 2 (周三下午)**: 事件影响计算
 - [ ] 实现事件对资产的影响
@@ -172,7 +172,7 @@ Legacy Guardians 游戏系统
 - 个性化反馈
 
 ##### 核心文件
-- `src/constants/ai-partner.json`
+- `src/constants/ai-personalities.json`
 - `src/components/Modals.tsx` (AI聊天部分)
 
 ##### 开发步骤
@@ -205,6 +205,7 @@ Legacy Guardians 游戏系统
 ##### 核心文件
 - `src/hooks/useGameState.ts` (决策相关)
 - `src/components/Modals.tsx` (决策弹窗)
+- `src/modules/dilemmas.ts` (困境问题库)
 
 ##### 开发步骤
 **Step 1 (周四下午)**: 决策场景基础
@@ -289,6 +290,7 @@ Legacy Guardians 游戏系统
 
 ##### 核心文件
 - `src/components/FloatingButtons.tsx`
+- `src/modules/spinWheel.ts`
 
 ##### 开发步骤
 **Step 1 (周五下午)**: 功能优化

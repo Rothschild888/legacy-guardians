@@ -23,7 +23,7 @@ export const GAME_CONFIG = {
 	
 	// Returns and Rewards
 	BASE_DAILY_RETURN: 0.02, // 2% base return
-	COIN_REWARD_RATIO: 0.1, // 10% of returns as coins
+        COIN_REWARD_RATIO: 1, // 1 coin per percentage point of returns
 	GEM_REWARD_THRESHOLD: 50, // 50% return threshold for gem reward
 	
 	// Badge Requirements
@@ -96,10 +96,9 @@ export const GAME_CONFIG = {
 export const ASSET_CATEGORIES = {
 	TECH: 'tech',
 	BOND: 'bond',
-	COMMODITY: 'commodity',
-	CRYPTO: 'crypto',
-	ESG: 'esg',
-	GOLD: 'gold',
+        CRYPTO: 'crypto',
+        ESG: 'esg',
+        GOLD: 'gold',
 	STABLECOIN: 'stablecoin',
 	YIELD: 'yield',
 } as const;
@@ -131,8 +130,16 @@ export const GAME_LEVELS = {
 
 // Level Experience Requirements
 export const LEVEL_EXPERIENCE = {
-	NOVICE: 0,
-	SKILLED: 100,
-	EXPERT: 500,
-	MASTER: 1000,
+        NOVICE: 0,
+        SKILLED: 100,
+        EXPERT: 500,
+        MASTER: 1000,
+} as const;
+
+// Game messages (prepared for localization)
+export const EASTER_EGG_MESSAGE =
+        '🎉 彩蛋事件：你发现了一只会跳舞的柴犬！\n\n奖励：收益+5%，心情+100！';
+
+export const GAME_MESSAGES = {
+        EASTER_EGG_MESSAGE,
 } as const;

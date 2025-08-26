@@ -1,12 +1,15 @@
 // Legacy Guardians - Type Definitions
 
+import type { Dispatch, SetStateAction } from 'react';
+
 // Asset Types
 export interface Asset {
-	key: string;
-	name: string;
-	expectedReturn: number;
-	volatility: number;
-	description: string;
+        key: string;
+        name: string;
+        expectedReturn: number;
+        volatility: number;
+        description: string;
+        icon?: string;
 }
 
 // Artifact Types
@@ -14,7 +17,7 @@ export interface Artifact {
 	key: string;
 	name: string;
 	icon: string;
-	theme: 'forest' | 'snow' | 'volcano' | 'crystal';
+        theme: 'forest' | 'snow' | 'palace' | 'starsea' | 'oasis' | 'lake' | 'temple';
 	description: string;
 	riskLevel: 'low' | 'medium' | 'high';
 }
@@ -31,49 +34,69 @@ export interface Task {
 
 // Event Types
 export interface MarketEvent {
-	id: number;
-	name: string;
-	description: string;
-	affected: string[];
-	impactRange: { [key: string]: [number, number] };
-	probability: number;
-	choices?: string[];
+        id: number;
+        name: string;
+        description: string;
+        affected: string[];
+        impactRange: { [key: string]: [number, number] };
+        probability: number;
+        choices?: { text: string; impactRange: { [key: string]: [number, number] }; effect: string }[];
+        icon?: string;
 }
 
 // Badge Types
 export interface Badge {
-	key: string;
-	name: string;
-	desc: string;
-	requirement: string;
-	category: 'diversification' | 'risk-management' | 'knowledge' | 'achievement';
+        key: string;
+        name: string;
+        desc: string;
+        requirement?: string;
+        category?: 'diversification' | 'risk-management' | 'knowledge' | 'achievement';
+        icon?: string;
+}
+
+// Dilemma Types
+export interface DilemmaOption {
+        text: string;
+        consequence: string;
+        skill: 'diversification' | 'risk-management' | 'knowledge';
+}
+
+export interface Dilemma {
+        text: string;
+        icon?: string;
+        options: DilemmaOption[];
 }
 
 // AI Partner Types
 export interface AIPartner {
-	name: string;
-	avatar: string;
-	personality: string;
-	feedbackTemplates: string[];
+        id: string;
+        name: string;
+        avatar: string;
+        prompt: string;
+        riskTolerance: 'low' | 'medium' | 'high';
+        feedbackTemplates: string[];
 }
 
 // Game State Types
 export interface GameState {
-	day: number;
-	weights: { [key: string]: number };
-	returns: number | null;
-	coins: number;
-	gems: number;
-	badges: string[];
-	history: GameHistory[];
+        day: number;
+        weights: { [key: string]: number };
+        returns: number | null;
+        volatility: number | null;
+        drawdown: number | null;
+        coins: number;
+        gems: number;
+        badges: string[];
+        history: GameHistory[];
 }
 
 export interface GameHistory {
-	day: number;
-	weights: { [key: string]: number };
-	event: MarketEvent | null;
-	returns: number;
-	timestamp: Date;
+        day: number;
+        weights: { [key: string]: number };
+        eventId?: number;
+        effect?: string;
+        returns: number;
+        timestamp?: Date;
 }
 
 // User Types

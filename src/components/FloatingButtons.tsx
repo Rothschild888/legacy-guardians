@@ -7,24 +7,28 @@ interface FloatingButtonsProps {
   wheelResult: string | null;
   wheelUsed: boolean;
   aiChatOpen: boolean;
+  aiEnabled: boolean;
   onWheelOpen: () => void;
   onWheelClose: () => void;
   onSpinWheel: () => void;
   onAiChatOpen: () => void;
   onAiChatClose: () => void;
+  onParentOpen: () => void;
 }
 
 // Styled Components
-const FloatingButton = styled.button<{ $type: 'wheel' | 'chat'; $disabled?: boolean }>`
+const FloatingButton = styled.button<{ $type: 'wheel' | 'chat' | 'parent'; $disabled?: boolean }>`
   position: fixed;
-  bottom: ${({ $type }) => $type === 'wheel' ? '110px' : '32px'};
+  bottom: ${({ $type }) =>
+    $type === 'parent' ? '188px' : $type === 'wheel' ? '110px' : '32px'
+  };
   right: 32px;
   z-index: 1000;
-  background: ${({ $type }) => 
-    $type === 'wheel' ? theme.colors.cyber.secondary : theme.colors.cyber.primary
+  background: ${({ $type }) =>
+    $type === 'chat' ? theme.colors.cyber.primary : theme.colors.cyber.secondary
   };
-  color: ${({ $type }) => 
-    $type === 'wheel' ? theme.colors.cyber.text : theme.colors.cyber.dark
+  color: ${({ $type }) =>
+    $type === 'chat' ? theme.colors.cyber.dark : theme.colors.cyber.text
   };
   border-radius: 50%;
   width: 60px;
@@ -125,11 +129,13 @@ export const FloatingButtons: React.FC<FloatingButtonsProps> = ({
   wheelResult,
   wheelUsed,
   aiChatOpen,
+  aiEnabled,
   onWheelOpen,
   onWheelClose,
   onSpinWheel,
   onAiChatOpen,
-  onAiChatClose
+  onAiChatClose,
+  onParentOpen
 }) => {
   return (
     <>
@@ -145,12 +151,23 @@ export const FloatingButtons: React.FC<FloatingButtonsProps> = ({
       </FloatingButton>
 
       {/* AI Chat Floating Button */}
-      <FloatingButton 
-        $type="chat"
-        onClick={onAiChatOpen} 
-        title="向AI伙伴提问"
+      {aiEnabled && (
+        <FloatingButton
+          $type="chat"
+          onClick={onAiChatOpen}
+          title="向AI伙伴提问"
+        >
+          💬
+        </FloatingButton>
+      )}
+
+      {/* Parent Control Floating Button */}
+      <FloatingButton
+        $type="parent"
+        onClick={onParentOpen}
+        title="家长控制"
       >
-        💬
+        👪
       </FloatingButton>
 
       {/* Spin the Wheel Modal */}

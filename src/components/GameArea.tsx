@@ -4,12 +4,17 @@ import { theme } from '../styles/theme';
 
 interface GameAreaProps {
   task: any;
+  taskObjective: string;
+  lastTaskResult: { title: string; completed: boolean; reward: { coins: number; gems: number; badge?: string } } | null;
   event: any;
+  history: any[];
   artifactsData: any[];
   weights: { [key: string]: number };
   returns: number | null;
+  volatility: number | null;
+  drawdown: number | null;
   onWeightChange: (key: string, value: number) => void;
-  onNextDay: () => void;
+  onNextDay: (choiceIndex?: number) => void;
   onResetGame: () => void;
   onShowModal: (content: string) => void;
 }
@@ -88,6 +93,18 @@ const NoEventText = styled.div`
   color: ${theme.colors.cyber.gray};
 `;
 
+const EventHistory = styled.div`
+  margin-top: 12px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  color: ${theme.colors.cyber.text};
+`;
+
+const HistoryItem = styled.div`
+  margin-bottom: 4px;
+`;
+
 const AssetAllocationContainer = styled.div`
   /* 继承 legacy-card 样式 */
 `;
@@ -99,10 +116,14 @@ const AssetsGrid = styled.div`
 
 const AssetCard = styled.div<{ $theme: string }>`
   flex: 1;
-  background: ${({ $theme }) => 
+  background: ${({ $theme }) =>
     $theme === 'forest' ? 'rgba(0,255,247,0.10)' :
     $theme === 'snow' ? 'rgba(0,234,255,0.10)' :
-    $theme === 'volcano' ? 'rgba(255,111,0,0.10)' :
+    $theme === 'palace' ? 'rgba(255,215,0,0.10)' :
+    $theme === 'oasis' ? 'rgba(0,255,0,0.10)' :
+    $theme === 'lake' ? 'rgba(30,144,255,0.10)' :
+    $theme === 'temple' ? 'rgba(255,165,0,0.10)' :
+    $theme === 'starsea' ? 'rgba(255,0,204,0.10)' :
     'rgba(255,0,204,0.10)'
   };
   border-radius: 12px;
@@ -215,10 +236,15 @@ const ActionButton = styled.button`
 
 export const GameArea: React.FC<GameAreaProps> = ({
   task,
+  taskObjective,
+  lastTaskResult,
   event,
+  history,
   artifactsData,
   weights,
   returns,
+  volatility,
+  drawdown,
   onWeightChange,
   onNextDay,
   onResetGame,
@@ -242,6 +268,12 @@ export const GameArea: React.FC<GameAreaProps> = ({
           <TaskTitle>{task?.title || '暂无任务'}</TaskTitle>
           <TaskBackground>{task?.background || ''}</TaskBackground>
           <TaskTip>{task?.tip || ''}</TaskTip>
+          {taskObjective && <TaskTip>目标：{taskObjective}</TaskTip>}
+          {lastTaskResult && (
+            <TaskTip>
+              上个任务{lastTaskResult.completed ? `完成✅ 奖励：+${lastTaskResult.reward.coins}币 +${lastTaskResult.reward.gems}宝石${lastTaskResult.reward.badge ? ` +徽章：${lastTaskResult.reward.badge}` : ''}` : '未完成❌'}
+            </TaskTip>
+          )}
         </Card>
         
         <Card className="legacy-card">
@@ -270,13 +302,13 @@ export const GameArea: React.FC<GameAreaProps> = ({
               {/* Event choices (for advanced events) */}
               {event.choices && Array.isArray(event.choices) && (
                 <EventChoices>
-                  {event.choices.map((choice: string) => (
-                    <ChoiceButton 
-                      key={choice} 
-                      className="legacy-btn" 
-                      onClick={onNextDay}
+                  {event.choices.map((choice: any, idx: number) => (
+                    <ChoiceButton
+                      key={choice.text}
+                      className="legacy-btn"
+                      onClick={() => onNextDay(idx)}
                     >
-                      {choice}
+                      {choice.text}
                     </ChoiceButton>
                   ))}
                 </EventChoices>
@@ -287,6 +319,21 @@ export const GameArea: React.FC<GameAreaProps> = ({
           )}
         </Card>
       </CardsContainer>
+
+      {history.length > 0 && (
+        <Card className="legacy-card">
+          <h2 className="legacy-task">事件记录</h2>
+          <EventHistory>
+            {history.map(h => (
+              h.eventId ? (
+                <HistoryItem key={h.day}>
+                  第{h.day}天: 事件 {h.eventId} - {h.effect}
+                </HistoryItem>
+              ) : null
+            ))}
+          </EventHistory>
+        </Card>
+      )}
 
       {/* Asset Allocation */}
       <AssetAllocationContainer className="legacy-card">
@@ -323,9 +370,13 @@ export const GameArea: React.FC<GameAreaProps> = ({
                 title={`点击查看${artifact.name}详情`}
                 onClick={() => {
                   onShowModal(`${artifact.name}（${artifact.icon}）\n\n权重: ${weights[artifact.key] || 0}%\n\n此资产代表：${
-                    artifact.theme === 'forest' ? '科技股' : 
-                    artifact.theme === 'snow' ? '债券' : 
-                    artifact.theme === 'volcano' ? '商品' : '加密货币'
+                    artifact.theme === 'forest' ? '科技股' :
+                    artifact.theme === 'snow' ? '债券' :
+                    artifact.theme === 'palace' ? '黄金' :
+                    artifact.theme === 'oasis' ? 'ESG' :
+                    artifact.theme === 'lake' ? '稳定币' :
+                    artifact.theme === 'temple' ? '收益资产' :
+                    '加密货币'
                   }\n\n风险提示: ${(weights[artifact.key] || 0) > 60 ? '集中风险' : '分散配置'}`);
                 }}
               >
@@ -347,10 +398,24 @@ export const GameArea: React.FC<GameAreaProps> = ({
           <ReturnsValue>
             {returns !== null ? `${returns}%` : '请点击"下一天"模拟收益'}
           </ReturnsValue>
+          {volatility !== null && (
+            <div>
+              波动率: {volatility}%{volatility > 20 ? ' ⚠️ 波动较高' : ''}
+            </div>
+          )}
+          {drawdown !== null && (
+            <div>
+              回撤: {drawdown}%{drawdown < -20 ? ' ⚠️ 回撤严重' : ''}
+            </div>
+          )}
         </ReturnsInfo>
         
         <ActionButtons>
-          <ActionButton className="legacy-btn" onClick={onNextDay}>
+          <ActionButton
+            className="legacy-btn"
+            onClick={() => onNextDay()}
+            disabled={event && event.choices && event.choices.length > 0}
+          >
             下一天
           </ActionButton>
           <ActionButton className="legacy-btn legacy-reset" onClick={onResetGame}>

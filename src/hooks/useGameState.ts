@@ -1,64 +1,91 @@
 // Legacy Guardians - Game State Hook
 
 import { useState, useCallback } from 'react';
+import { Dilemma } from '../types';
 import tasksData from '../constants/tasks.json';
-import eventsData from '../constants/events.json';
-import badgesData from '../constants/badges.json';
+import { events as eventsData } from '../modules/events';
+import { dilemmas as dilemmaQuestions } from '../modules/dilemmas';
+import { handleSpinWheel as spinWheel } from '../modules/spinWheel';
+import aiPersonalities from '../constants/ai-personalities.json';
+import { assets as assetsData } from '../modules/assets';
+import { getAiResponse } from '../utils/ai';
+import { taskGoals } from '../constants/task-goals';
+import {
+  calculateDailyReturns,
+  generateRandomEvent,
+  checkGameEnd,
+  sanitizeWeights,
+} from '../utils/game-logic';
+import { GAME_CONFIG } from '../constants/game-config';
+import {
+  resolveEventChoice,
+  applyDailyRewards,
+  maybeTriggerEncounter,
+} from '../utils/daily-helpers';
+import { INITIAL_STATE } from '../constants/initial-state';
 
 export const useGameState = () => {
   // Company/Avatar Customization
-  const [companyName, setCompanyName] = useState('我的空岛公司');
-  const [avatar, setAvatar] = useState('https://cdn-icons-png.flaticon.com/512/616/616494.png');
-  const [theme, setTheme] = useState('cyberpunk');
+  const [companyName, setCompanyName] = useState(INITIAL_STATE.companyName);
+  const [avatar, setAvatar] = useState(INITIAL_STATE.avatar);
+  const [theme, setTheme] = useState(INITIAL_STATE.theme);
 
   // Resource Management
-  const [coins, setCoins] = useState(100);
-  const [gems, setGems] = useState(5);
+  const [coins, setCoins] = useState(INITIAL_STATE.coins);
+  const [gems, setGems] = useState(INITIAL_STATE.gems);
+  const [stars, setStars] = useState(INITIAL_STATE.stars);
+  const [progress, setProgress] = useState(INITIAL_STATE.progress);
+  const [allowedAssets, setAllowedAssets] = useState<string[]>([...INITIAL_STATE.allowedAssets]);
+  const [pendingCoinRequest, setPendingCoinRequest] = useState<number | null>(INITIAL_STATE.pendingCoinRequest);
 
   // Spin the Wheel state
-  const [wheelOpen, setWheelOpen] = useState(false);
-  const [wheelResult, setWheelResult] = useState<string | null>(null);
-  const [wheelUsed, setWheelUsed] = useState(false);
+  const [wheelOpen, setWheelOpen] = useState(INITIAL_STATE.wheelOpen);
+  const [wheelResult, setWheelResult] = useState<string | null>(INITIAL_STATE.wheelResult);
+  const [wheelUsed, setWheelUsed] = useState(INITIAL_STATE.wheelUsed);
 
   // AI chat state
-  const [aiChatOpen, setAiChatOpen] = useState(false);
-  const [aiInput, setAiInput] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
+  const [aiChatOpen, setAiChatOpen] = useState(INITIAL_STATE.aiChatOpen);
+  const [aiInput, setAiInput] = useState(INITIAL_STATE.aiInput);
+  const [aiResponse, setAiResponse] = useState(INITIAL_STATE.aiResponse);
+  const [aiPersonality, setAiPersonality] = useState<string>(INITIAL_STATE.aiPersonality);
+  const [aiEnabled, setAiEnabled] = useState(INITIAL_STATE.aiEnabled);
 
   // Dilemma/Quiz state
-  const [dilemma, setDilemma] = useState<string | null>(null);
-  const [quiz, setQuiz] = useState<{ question: string, options: string[], answer: string } | null>(null);
-  const [quizAnswered, setQuizAnswered] = useState<string | null>(null);
+  const [dilemma, setDilemma] = useState<Dilemma | null>(INITIAL_STATE.dilemma);
+  const [currentDilemmaIndex, setCurrentDilemmaIndex] = useState<number | null>(INITIAL_STATE.currentDilemmaIndex);
+  const [quiz, setQuiz] = useState<{ question: string, options: string[], answer: string } | null>(INITIAL_STATE.quiz);
+  const [quizAnswered, setQuizAnswered] = useState<string | null>(INITIAL_STATE.quizAnswered);
 
   // Main game state
-  const [endgame, setEndgame] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
-  const [askedDilemmas, setAskedDilemmas] = useState<number[]>([]);
-  const [weights, setWeights] = useState<{ [key: string]: number }>({ tech: 25, bond: 25, commodity: 25, crypto: 25 });
-  const [day, setDay] = useState(0);
-  const [returns, setReturns] = useState<number | null>(null);
-  const [event, setEvent] = useState<any>(null);
-  const [task, setTask] = useState<any>(tasksData[0]);
-  const [badges, setBadges] = useState<string[]>([]);
+  const [endgame, setEndgame] = useState(INITIAL_STATE.endgame);
+  const [showSummary, setShowSummary] = useState(INITIAL_STATE.showSummary);
+  const [history, setHistory] = useState<any[]>([...INITIAL_STATE.history]);
+  const [completedDilemmas, setCompletedDilemmas] = useState<number[]>([...INITIAL_STATE.completedDilemmas]);
+  const [skillProgress, setSkillProgress] = useState<{ [key: string]: number }>({ ...INITIAL_STATE.skillProgress });
+  const [weights, setWeights] = useState<{ [key: string]: number }>({ ...INITIAL_STATE.weights });
+  const [day, setDay] = useState(INITIAL_STATE.day);
+  const [returns, setReturns] = useState<number | null>(INITIAL_STATE.returns);
+  const [volatility, setVolatility] = useState<number | null>(INITIAL_STATE.volatility);
+  const [drawdown, setDrawdown] = useState<number | null>(INITIAL_STATE.drawdown);
+  const [portfolioValue, setPortfolioValue] = useState(INITIAL_STATE.portfolioValue);
+  const [peakValue, setPeakValue] = useState(INITIAL_STATE.peakValue);
+  const cumulativeReturn = (portfolioValue - 1) * 100;
+  const [event, setEvent] = useState<any>(INITIAL_STATE.event);
+  const [task, setTask] = useState<any>(INITIAL_STATE.task);
+  const [taskObjective, setTaskObjective] = useState<string>(INITIAL_STATE.taskObjective);
+  const [lastTaskResult, setLastTaskResult] = useState<
+    { title: string; completed: boolean; reward: { coins: number; gems: number; badge?: string } } | null
+  >(INITIAL_STATE.lastTaskResult);
+  const [badges, setBadges] = useState<string[]>([...INITIAL_STATE.badges]);
 
   // Sidebar/modal state
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState<string>('');
-  const [pendingCompanyName, setPendingCompanyName] = useState(companyName);
+  const [showModal, setShowModal] = useState(INITIAL_STATE.showModal);
+  const [modalContent, setModalContent] = useState<string>(INITIAL_STATE.modalContent);
+  const [pendingCompanyName, setPendingCompanyName] = useState(INITIAL_STATE.pendingCompanyName);
 
   // Quiz state
-  const [quizActive, setQuizActive] = useState(false);
-  const [quizResult, setQuizResult] = useState('');
-
-  // Dilemma questions pool
-  const dilemmaQuestions = [
-    '市场波动加剧，你会选择？',
-    '突发利空消息，你会选择？',
-    '资产暴涨，你会选择？',
-    '行业政策变化，你会选择？',
-    '朋友推荐新资产，你会选择？'
-  ];
+  const [quizActive, setQuizActive] = useState(INITIAL_STATE.quizActive);
+  const [quizResult, setQuizResult] = useState(INITIAL_STATE.quizResult);
 
   // Avatar options
   const avatarOptions = [
@@ -70,195 +97,261 @@ export const useGameState = () => {
     'https://cdn-icons-png.flaticon.com/512/616/616408.png'
   ];
 
-  // Extra events
-  const extraEvents = [
-    {
-      id: 3,
-      name: '科技牛市',
-      affected: ['tech', 'crypto'],
-      impactRange: { tech: [0.05, 0.15], crypto: [0.03, 0.10] },
-      probability: 0.12,
-      description: '科技股和加密货币迎来牛市，价格大幅上涨。'
-    },
-    {
-      id: 4,
-      name: '债券利好',
-      affected: ['bond'],
-      impactRange: { bond: [0.02, 0.08] },
-      probability: 0.10,
-      description: '债券市场利好，收益提升。'
-    },
-    {
-      id: 5,
-      name: '商品暴跌',
-      affected: ['commodity'],
-      impactRange: { commodity: [-0.15, -0.05] },
-      probability: 0.09,
-      description: '商品市场暴跌，注意分散风险。'
-    },
-    {
-      id: 6,
-      name: '加密波动',
-      affected: ['crypto'],
-      impactRange: { crypto: [-0.20, 0.20] },
-      probability: 0.15,
-      description: '加密货币剧烈波动，风险与机会并存。'
-    }
-  ];
+  // Parent controls
+  const requestCoins = useCallback((amount: number) => {
+    setPendingCoinRequest(amount);
+  }, []);
 
-  const allEvents = [...eventsData, ...extraEvents];
+  const approveCoinRequest = useCallback(() => {
+    if (pendingCoinRequest !== null) {
+      setCoins(c => c + pendingCoinRequest);
+      setPendingCoinRequest(null);
+    }
+  }, [pendingCoinRequest]);
+
+  const rejectCoinRequest = useCallback(() => setPendingCoinRequest(null), []);
+
+  const toggleAllowedAsset = useCallback((asset: string) => {
+    setAllowedAssets(prev => {
+      if (prev.includes(asset)) {
+        setWeights(w => ({ ...w, [asset]: 0 }));
+        return prev.filter(a => a !== asset);
+      }
+      return [...prev, asset];
+    });
+  }, [setWeights]);
+
+  const addStars = useCallback((count: number = 1) => {
+    setStars(prev => {
+      const newStars = prev + count;
+      const newProgress = Math.min(100, Math.floor(newStars / 5) * 25);
+      setProgress(newProgress);
+      return newStars;
+    });
+  }, []);
+
+  const handleDilemmaAnswer = useCallback((optionIndex: number) => {
+    if (!dilemma || currentDilemmaIndex === null) return '';
+    const option = dilemma.options[optionIndex];
+    setCompletedDilemmas(prev => [...prev, currentDilemmaIndex]);
+    setSkillProgress(prev => ({
+      ...prev,
+      [option.skill]: (prev[option.skill] || 0) + 1,
+    }));
+    setCurrentDilemmaIndex(null);
+    return option.consequence;
+  }, [dilemma, currentDilemmaIndex]);
+
 
   // Handle spin wheel
   const handleSpinWheel = useCallback(() => {
-    const outcomes = [
-      { label: '收益+10%', effect: () => setReturns(r => (r !== null ? r + 10 : 10)), color: '#27ae60' },
-      { label: '收益-10%', effect: () => setReturns(r => (r !== null ? r - 10 : -10)), color: '#e74c3c' },
-      { label: '获得分散者徽章', effect: () => setBadges(b => b.includes('分散者') ? b : [...b, '分散者']), color: '#00fff7' },
-      { label: '风险提升', effect: () => setReturns(r => (r !== null ? r - 5 : -5)), color: '#ff00cc' },
-      { label: '知识大师徽章', effect: () => setBadges(b => b.includes('知识大师') ? b : [...b, '知识大师']), color: '#f6d365' },
-      { label: '无变化', effect: () => {}, color: '#888' }
-    ];
-    const idx = Math.floor(Math.random() * outcomes.length);
-    setWheelResult(outcomes[idx].label);
-    outcomes[idx].effect();
-    setWheelUsed(true);
-    setTimeout(() => { setWheelOpen(false); setWheelResult(null); }, 1800);
-  }, []);
+    spinWheel({
+      setReturns,
+      setBadges,
+      setWheelResult,
+      setWheelUsed,
+      setWheelOpen,
+    });
+  }, [setReturns, setBadges, setWheelResult, setWheelUsed, setWheelOpen]);
 
   // Handle AI ask
   const handleAiAsk = useCallback(async () => {
     const input = aiInput.trim();
-    if (!input) return;
+    if (!input || !aiEnabled) return;
     setAiResponse('正在思考...');
-    
-    setTimeout(() => {
-      const funnyReplies = [
-        '你问得太专业了，我得查查我的数据库！',
-        '投资就像玩游戏，记得多收集徽章哦！',
-        '如果市场下跌，不如喝杯奶茶冷静一下？',
-        '分散投资，财富自由，顺便多吃点薯片！',
-        '你是空岛最强守护者，继续冲鸭！',
-        'AI也有点懵，建议你问ChatGPT！',
-        '投资有风险，游戏更有趣！',
-        '如果你赢了，记得截图发朋友圈！',
-        '财富密码：多玩几天，解锁彩蛋！',
-        '我猜你会选A，但B也不错！',
-        '市场风暴来袭，快用你的神器！',
-        '你问的问题让我想起了猫猫狗狗。',
-        '投资路上，记得保持微笑😄！'
-      ];
-      setAiResponse(funnyReplies[Math.floor(Math.random() * funnyReplies.length)]);
-    }, 1200);
-  }, [aiInput]);
+    const personality = aiPersonalities.find(p => p.id === aiPersonality) || aiPersonalities[0];
+    const reply = await getAiResponse(input, weights, personality);
+    setAiResponse(reply);
+  }, [aiInput, weights, aiPersonality, aiEnabled]);
 
   // Reset game function
   const resetGame = useCallback(() => {
-    setWeights({ tech: 25, bond: 25, commodity: 25, crypto: 25 });
-    setDay(0);
-    setReturns(null);
-    setEvent(null);
-    setTask(tasksData[0]);
-    setBadges([]);
-    setHistory([]);
-    setQuizActive(false);
-    setQuizResult('');
-    setCoins(100);
-    setGems(5);
-    setEndgame(false);
-    setShowSummary(false);
+    const resetState: Record<string, (value: any) => void> = {
+      weights: setWeights,
+      day: setDay,
+      returns: setReturns,
+      event: setEvent,
+      task: setTask,
+      taskObjective: setTaskObjective,
+      lastTaskResult: setLastTaskResult,
+      badges: setBadges,
+      history: setHistory,
+      volatility: setVolatility,
+      drawdown: setDrawdown,
+      portfolioValue: setPortfolioValue,
+      peakValue: setPeakValue,
+      quizActive: setQuizActive,
+      quizResult: setQuizResult,
+      coins: setCoins,
+      gems: setGems,
+      stars: setStars,
+      progress: setProgress,
+      endgame: setEndgame,
+      showSummary: setShowSummary,
+      dilemma: setDilemma,
+      currentDilemmaIndex: setCurrentDilemmaIndex,
+      completedDilemmas: setCompletedDilemmas,
+      skillProgress: setSkillProgress,
+    };
+
+    Object.entries(resetState).forEach(([key, setter]) => {
+      const value = (INITIAL_STATE as any)[key];
+      if (Array.isArray(value)) {
+        setter([...value]);
+      } else if (value && typeof value === 'object') {
+        setter({ ...value });
+      } else {
+        setter(value);
+      }
+    });
   }, []);
 
   // Handle weight change
   const handleWeightChange = useCallback((key: string, value: number) => {
-    const total = Object.entries(weights).reduce((sum, [k, v]) => 
-      k === key ? sum + value : sum + (v as number), 0
-    );
-    if (total <= 100) {
-      setWeights({ ...weights, [key]: value });
+    const sanitized = sanitizeWeights(weights, allowedAssets);
+
+    if (!allowedAssets.includes(key)) {
+      setWeights(sanitized);
+      return;
     }
-  }, [weights]);
+
+    const total = Object.entries(sanitized).reduce(
+      (sum, [k, v]) => (k === key ? sum + value : sum + (v as number)),
+      0
+    );
+
+    if (total <= 100) {
+      setWeights({ ...sanitized, [key]: value });
+    } else {
+      setWeights(sanitized);
+    }
+  }, [weights, allowedAssets]);
 
   // Next day function
-  const nextDay = useCallback(() => {
-    // Fun event: meme or surprise
-    if (Math.random() < 0.15) {
-      setShowModal(true);
-      setModalContent('🎉 彩蛋事件：你发现了一只会跳舞的柴犬！\n\n奖励：收益+5%，心情+100！');
-      setReturns(r => (r !== null ? r + 5 : 5));
-      setCoins(c => c + 10);
-      setGems(g => g + 1);
+  const nextDay = useCallback((choiceIndex?: number) => {
+    if (event && event.choices && choiceIndex !== undefined) {
+      const resolution = resolveEventChoice({
+        event,
+        choiceIndex,
+        weights,
+        assets: assetsData,
+        portfolioValue,
+        peakValue,
+      });
+      const dayReturn = resolution.result.returns;
+      setReturns(dayReturn);
+      setVolatility(resolution.result.volatility);
+      setDrawdown(resolution.result.drawdown);
+      setPortfolioValue(resolution.result.portfolioValue);
+      setPeakValue(resolution.result.peakValue);
+
+      const rewards = applyDailyRewards({
+        dayReturn,
+        weights,
+        day,
+        task,
+        taskGoals,
+        badges,
+        history,
+        allowedAssets,
+        eventId: event.id,
+        effect: resolution.effect,
+      });
+
+      setCoins(c => c + rewards.coins);
+      setGems(g => g + rewards.gems);
+      if (rewards.stars > 0) addStars(rewards.stars);
+      setBadges(rewards.newBadges);
+      setHistory([...history, rewards.historyEntry]);
+      setLastTaskResult(rewards.lastTaskResult);
+
+      const taskIdx = (day + 1) % tasksData.length;
+      setTask(tasksData[taskIdx]);
+      setTaskObjective(taskGoals[tasksData[taskIdx].id].objective);
+      setDay(day + 1);
+
+      setEvent(resolution.updatedEvent);
+      setWheelUsed(false);
+      return;
     }
 
     setWheelUsed(false);
 
-    // Randomly trigger a dilemma or quiz
-    if (Math.random() < 0.4) {
-      const available = dilemmaQuestions.map((q, i) => i).filter(i => !askedDilemmas.includes(i));
-      if (available.length > 0) {
-        const idx = available[Math.floor(Math.random() * available.length)];
-        setDilemma(dilemmaQuestions[idx]);
-        setAskedDilemmas(prev => [...prev, idx]);
+    const encounter = maybeTriggerEncounter(
+      dilemmaQuestions,
+      completedDilemmas,
+      GAME_CONFIG.QUIZ_QUESTIONS
+    );
+    if (encounter) {
+      if (encounter.type === 'easterEgg') {
+        setShowModal(true);
+        setModalContent(encounter.message!);
+        setReturns(r => (r !== null ? r + encounter.returnsBonus! : encounter.returnsBonus!));
+        setCoins(c => c + (encounter.coins || 0));
+        setGems(g => g + (encounter.gems || 0));
+      }
+      if (encounter.type === 'dilemma') {
+        setDilemma(encounter.dilemma!);
+        setCurrentDilemmaIndex(encounter.index!);
+        return;
+      }
+      if (encounter.type === 'quiz') {
+        setQuiz(encounter.quiz);
         return;
       }
     }
 
-    if (Math.random() < 0.2) {
-      setQuiz({
-        question: '分散投资的最大好处是什么？',
-        options: ['降低风险', '增加波动', '提高单一资产收益'],
-        answer: '降低风险'
-      });
-      return;
-    }
-
     // Endgame trigger
-    const wealthGoal = 300;
-    const allBadges = badgesData.map(b => b.name.replace('徽章',''));
-    const hasAllBadges = allBadges.every(b => badges.includes(b));
-    if (returns !== null && returns >= wealthGoal && hasAllBadges) {
+    if (
+      checkGameEnd(cumulativeReturn, badges, GAME_CONFIG.MAX_BADGES) &&
+      !endgame
+    ) {
       setEndgame(true);
       setTimeout(() => setShowSummary(true), 2500);
+    }
+
+    // Pick a random event based on allowed assets
+    const ev = generateRandomEvent(eventsData, allowedAssets);
+    setEvent(ev);
+
+    // If event has choices, wait for user decision
+    if (ev && ev.choices && ev.choices.length > 0) {
       return;
     }
 
-    // Pick a random event
-    const eventIdx = Math.floor(Math.random() * allEvents.length);
-    const ev = allEvents[eventIdx];
-    setEvent(ev);
-
-    // Pick next task
     const taskIdx = (day + 1) % tasksData.length;
     setTask(tasksData[taskIdx]);
+    setTaskObjective(taskGoals[tasksData[taskIdx].id].objective);
     setDay(day + 1);
 
-    // Calculate returns (simplified for now)
-    let dailyReturn = 0;
-    // This would need the actual asset data to calculate properly
-    dailyReturn = Math.random() * 20 - 10; // Random return between -10% and +10%
-    
-    const dayReturn = Number((dailyReturn * 100).toFixed(2));
+    const result = calculateDailyReturns(weights, assetsData, ev, portfolioValue, peakValue);
+    const dayReturn = result.returns;
     setReturns(dayReturn);
+    setVolatility(result.volatility);
+    setDrawdown(result.drawdown);
+    setPortfolioValue(result.portfolioValue);
+    setPeakValue(result.peakValue);
 
-    // Update coins/gems based on returns
-    setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
-    if (dayReturn > 50) setGems(g => g + 1);
+    const rewards = applyDailyRewards({
+      dayReturn,
+      weights,
+      day,
+      task,
+      taskGoals,
+      badges,
+      history,
+      allowedAssets,
+      eventId: ev ? ev.id : undefined,
+      effect: ev ? ev.description : undefined,
+    });
 
-    // Badge logic
-    let newBadges = [...badges];
-    if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
-      newBadges.push('分散者');
-    }
-    if (history.length >= 2 && history.slice(-2).every(h => h.returns > 0) && dayReturn > 0 && !badges.includes('长远目光')) {
-      newBadges.push('长远目光');
-    }
-    if (Object.values(weights).some(w => w > 60) && dayReturn > 0 && !badges.includes('风险管理者')) {
-      newBadges.push('风险管理者');
-    }
-    setBadges(newBadges);
-
-    // Track history
-    setHistory([...history, { day: day + 1, weights: { ...weights }, event: ev, returns: dayReturn }]);
-  }, [day, returns, badges, weights, history, askedDilemmas]);
+    setCoins(c => c + rewards.coins);
+    setGems(g => g + rewards.gems);
+    if (rewards.stars > 0) addStars(rewards.stars);
+    setBadges(rewards.newBadges);
+    setHistory([...history, rewards.historyEntry]);
+    setLastTaskResult(rewards.lastTaskResult);
+  }, [day, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task, allowedAssets, endgame, cumulativeReturn]);
 
   return {
     // State
@@ -267,6 +360,8 @@ export const useGameState = () => {
     theme,
     coins,
     gems,
+    stars,
+    progress,
     wheelOpen,
     wheelResult,
     wheelUsed,
@@ -282,14 +377,26 @@ export const useGameState = () => {
     weights,
     day,
     returns,
+    volatility,
+    drawdown,
+    portfolioValue,
+    cumulativeReturn,
     event,
     task,
+    taskObjective,
+    lastTaskResult,
     badges,
     showModal,
     modalContent,
     pendingCompanyName,
     quizActive,
     quizResult,
+    allowedAssets,
+    pendingCoinRequest,
+    aiPersonality,
+    aiEnabled,
+    completedDilemmas,
+    skillProgress,
     
     // Options
     avatarOptions,
@@ -301,12 +408,16 @@ export const useGameState = () => {
     setTheme,
     setCoins,
     setGems,
+    setStars,
+    setProgress,
     setWheelOpen,
     setWheelResult,
     setWheelUsed,
     setAiChatOpen,
     setAiInput,
     setAiResponse,
+    setAiPersonality,
+    setAiEnabled,
     setDilemma,
     setQuiz,
     setQuizAnswered,
@@ -316,6 +427,8 @@ export const useGameState = () => {
     setWeights,
     setDay,
     setReturns,
+    setVolatility,
+    setDrawdown,
     setEvent,
     setTask,
     setBadges,
@@ -324,12 +437,18 @@ export const useGameState = () => {
     setPendingCompanyName,
     setQuizActive,
     setQuizResult,
-    
+
     // Functions
     handleSpinWheel,
     handleAiAsk,
     resetGame,
     handleWeightChange,
-    nextDay
+    nextDay,
+    requestCoins,
+    approveCoinRequest,
+    rejectCoinRequest,
+    toggleAllowedAsset,
+    addStars,
+    handleDilemmaAnswer
   };
 };

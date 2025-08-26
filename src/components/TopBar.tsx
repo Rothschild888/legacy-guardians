@@ -1,16 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
 import { theme } from '../styles/theme';
+import { GAME_CONFIG } from '../constants/game-config';
 
 interface TopBarProps {
   companyName: string;
   avatar: string;
-  badges: string[];
   day: number;
   coins: number;
   gems: number;
+  stars: number;
   theme: string;
   onEditCompany: () => void;
+  onRequestCoins: () => void;
 }
 
 // Styled Components
@@ -114,15 +116,25 @@ const ResourceBadge = styled.span<{ $type: 'coins' | 'gems' }>`
   }
 `;
 
+const RequestButton = styled.button`
+  background: ${theme.colors.cyber.primary};
+  color: ${theme.colors.cyber.dark};
+  border-radius: 8px;
+  padding: 0.3em 0.6em;
+  font-weight: 700;
+  cursor: pointer;
+`;
+
 export const TopBar: React.FC<TopBarProps> = ({
   companyName,
   avatar,
-  badges,
   day,
   coins,
   gems,
+  stars,
   theme: currentTheme,
-  onEditCompany
+  onEditCompany,
+  onRequestCoins
 }) => {
   return (
     <>
@@ -141,11 +153,11 @@ export const TopBar: React.FC<TopBarProps> = ({
         </CompanyInfo>
         
         <StatusInfo>
-          守护者之星：{badges.length}/5
+          星星：{stars}
         </StatusInfo>
         
         <StatusInfoSecondary>
-          财富目标：300%
+          财富目标：{GAME_CONFIG.WEALTH_GOAL}%
         </StatusInfoSecondary>
         
         <StatusInfoText>
@@ -159,6 +171,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <ResourceBadge $type="gems">
             💎 {gems}
           </ResourceBadge>
+          <RequestButton onClick={onRequestCoins}>请求20💰</RequestButton>
         </ResourcesContainer>
       </TopBarContainer>
     </>
