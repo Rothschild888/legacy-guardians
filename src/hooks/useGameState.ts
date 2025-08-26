@@ -138,10 +138,14 @@ export const useGameState = () => {
   const rejectCoinRequest = useCallback(() => setPendingCoinRequest(null), []);
 
   const toggleAllowedAsset = useCallback((asset: string) => {
-    setAllowedAssets(prev =>
-      prev.includes(asset) ? prev.filter(a => a !== asset) : [...prev, asset]
-    );
-  }, []);
+    setAllowedAssets(prev => {
+      if (prev.includes(asset)) {
+        setWeights(w => ({ ...w, [asset]: 0 }));
+        return prev.filter(a => a !== asset);
+      }
+      return [...prev, asset];
+    });
+  }, [setWeights]);
 
   const addStars = useCallback((count: number = 1) => {
     setStars(prev => {
@@ -217,12 +221,24 @@ export const useGameState = () => {
 
   // Handle weight change
   const handleWeightChange = useCallback((key: string, value: number) => {
-    if (!allowedAssets.includes(key)) return;
-    const total = Object.entries(weights).reduce((sum, [k, v]) =>
-      k === key ? sum + value : sum + (v as number), 0
+    const sanitized = Object.fromEntries(
+      Object.entries(weights).map(([k, v]) => [k, allowedAssets.includes(k) ? v : 0])
+    ) as { [key: string]: number };
+
+    if (!allowedAssets.includes(key)) {
+      setWeights(sanitized);
+      return;
+    }
+
+    const total = Object.entries(sanitized).reduce(
+      (sum, [k, v]) => (k === key ? sum + value : sum + (v as number)),
+      0
     );
+
     if (total <= 100) {
-      setWeights({ ...weights, [key]: value });
+      setWeights({ ...sanitized, [key]: value });
+    } else {
+      setWeights(sanitized);
     }
   }, [weights, allowedAssets]);
 
@@ -284,11 +300,14 @@ export const useGameState = () => {
       setTaskObjective(taskGoals[tasksData[taskIdx].id].objective);
       setDay(day + 1);
 
+      const sanitizedWeights = Object.fromEntries(
+        Object.entries(weights).map(([k, v]) => [k, allowedAssets.includes(k) ? v : 0])
+      );
       setHistory([
         ...history,
         {
           day: day + 1,
-          weights: { ...weights },
+          weights: { ...sanitizedWeights },
           eventId: event.id,
           effect: choice.effect,
           returns: dayReturn,
@@ -408,11 +427,14 @@ export const useGameState = () => {
     }
     setBadges(newBadges);
 
+    const sanitizedWeights = Object.fromEntries(
+      Object.entries(weights).map(([k, v]) => [k, allowedAssets.includes(k) ? v : 0])
+    );
     setHistory([
       ...history,
       {
         day: day + 1,
-        weights: { ...weights },
+        weights: { ...sanitizedWeights },
         eventId: ev.id,
         effect: ev.description,
         returns: dayReturn,
@@ -423,7 +445,7 @@ export const useGameState = () => {
     ]);
 
     setLastTaskResult(goal ? { title: task.title, completed: taskCompleted, reward: goal.reward } : null);
-  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task]);
+  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task, allowedAssets]);
 
   return {
     // State
