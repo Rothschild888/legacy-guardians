@@ -133,26 +133,45 @@ export function calculateResourceRewards(returns: number): { coins: number; gems
  * Check if game should end
  */
 export function checkGameEnd(
-	returns: number,
-	badges: string[],
-	maxBadges: number
+        returns: number,
+        badges: string[],
+        maxBadges: number
 ): boolean {
-	const wealthGoal = GAME_CONFIG.WEALTH_GOAL;
-	const hasAllBadges = badges.length >= maxBadges;
-	
-	return returns >= wealthGoal && hasAllBadges;
+        const wealthGoal = GAME_CONFIG.WEALTH_GOAL;
+        const hasAllBadges = badges.length >= maxBadges;
+
+        return returns >= wealthGoal && hasAllBadges;
+}
+
+/**
+ * Maybe select a random item based on probability and optional filter
+ */
+export function maybeSelectRandom<T>(
+        items: T[],
+        probability: number,
+        filter?: (idx: number) => boolean
+): T | null {
+        if (Math.random() > probability) {
+                return null;
+        }
+
+        const indices = items
+                .map((_, i) => i)
+                .filter(i => (filter ? filter(i) : true));
+
+        if (indices.length === 0) {
+                return items.length === 0 ? (true as unknown as T) : null;
+        }
+
+        const randomIndex = indices[Math.floor(Math.random() * indices.length)];
+        return items[randomIndex];
 }
 
 /**
  * Generate random market event
  */
 export function generateRandomEvent(events: MarketEvent[]): MarketEvent | null {
-	if (Math.random() > GAME_CONFIG.DAILY_EVENT_PROBABILITY) {
-		return null;
-	}
-	
-	const eventIndex = Math.floor(Math.random() * events.length);
-	return events[eventIndex];
+        return maybeSelectRandom(events, GAME_CONFIG.DAILY_EVENT_PROBABILITY);
 }
 
 /**
@@ -162,36 +181,25 @@ export function generateRandomDilemma<T>(
         questions: T[],
         askedQuestions: number[]
 ): T | null {
-	if (Math.random() > GAME_CONFIG.DILEMMA_PROBABILITY) {
-		return null;
-	}
-	
-	const available = questions.map((_, i) => i).filter(i => !askedQuestions.includes(i));
-	if (available.length === 0) {
-		return null;
-	}
-	
-	const randomIndex = available[Math.floor(Math.random() * available.length)];
-	return questions[randomIndex];
+        return maybeSelectRandom(
+                questions,
+                GAME_CONFIG.DILEMMA_PROBABILITY,
+                idx => !askedQuestions.includes(idx)
+        );
 }
 
 /**
  * Generate random quiz question
  */
 export function generateRandomQuiz(quizzes: any[]): any | null {
-	if (Math.random() > GAME_CONFIG.QUIZ_PROBABILITY) {
-		return null;
-	}
-	
-	const randomIndex = Math.floor(Math.random() * quizzes.length);
-	return quizzes[randomIndex];
+        return maybeSelectRandom(quizzes, GAME_CONFIG.QUIZ_PROBABILITY);
 }
 
 /**
  * Check if easter egg should trigger
  */
 export function checkEasterEgg(): boolean {
-	return Math.random() < GAME_CONFIG.Easter_EGG_PROBABILITY;
+        return maybeSelectRandom([], GAME_CONFIG.Easter_EGG_PROBABILITY) !== null;
 }
 
 /**
