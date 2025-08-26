@@ -271,6 +271,7 @@ export const useGameState = () => {
       setDay(day + 1);
 
       setEvent(resolution.updatedEvent);
+      setWheelUsed(false);
       return;
     }
 

@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   base: '/legacy-guardians/', // GitHub Pages 仓库名称
+  test: {
+    environment: 'jsdom',
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
