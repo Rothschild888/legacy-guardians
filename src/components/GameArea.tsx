@@ -5,13 +5,14 @@ import { theme } from '../styles/theme';
 interface GameAreaProps {
   task: any;
   event: any;
+  history: any[];
   artifactsData: any[];
   weights: { [key: string]: number };
   returns: number | null;
   volatility: number | null;
   drawdown: number | null;
   onWeightChange: (key: string, value: number) => void;
-  onNextDay: () => void;
+  onNextDay: (choiceIndex?: number) => void;
   onResetGame: () => void;
   onShowModal: (content: string) => void;
 }
@@ -88,6 +89,18 @@ const ChoiceButton = styled.button`
 
 const NoEventText = styled.div`
   color: ${theme.colors.cyber.gray};
+`;
+
+const EventHistory = styled.div`
+  margin-top: 12px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  color: ${theme.colors.cyber.text};
+`;
+
+const HistoryItem = styled.div`
+  margin-bottom: 4px;
 `;
 
 const AssetAllocationContainer = styled.div`
@@ -222,6 +235,7 @@ const ActionButton = styled.button`
 export const GameArea: React.FC<GameAreaProps> = ({
   task,
   event,
+  history,
   artifactsData,
   weights,
   returns,
@@ -278,13 +292,13 @@ export const GameArea: React.FC<GameAreaProps> = ({
               {/* Event choices (for advanced events) */}
               {event.choices && Array.isArray(event.choices) && (
                 <EventChoices>
-                  {event.choices.map((choice: string) => (
-                    <ChoiceButton 
-                      key={choice} 
-                      className="legacy-btn" 
-                      onClick={onNextDay}
+                  {event.choices.map((choice: any, idx: number) => (
+                    <ChoiceButton
+                      key={choice.text}
+                      className="legacy-btn"
+                      onClick={() => onNextDay(idx)}
                     >
-                      {choice}
+                      {choice.text}
                     </ChoiceButton>
                   ))}
                 </EventChoices>
@@ -295,6 +309,21 @@ export const GameArea: React.FC<GameAreaProps> = ({
           )}
         </Card>
       </CardsContainer>
+
+      {history.length > 0 && (
+        <Card className="legacy-card">
+          <h2 className="legacy-task">事件记录</h2>
+          <EventHistory>
+            {history.map(h => (
+              h.eventId ? (
+                <HistoryItem key={h.day}>
+                  第{h.day}天: 事件 {h.eventId} - {h.effect}
+                </HistoryItem>
+              ) : null
+            ))}
+          </EventHistory>
+        </Card>
+      )}
 
       {/* Asset Allocation */}
       <AssetAllocationContainer className="legacy-card">
@@ -372,7 +401,11 @@ export const GameArea: React.FC<GameAreaProps> = ({
         </ReturnsInfo>
         
         <ActionButtons>
-          <ActionButton className="legacy-btn" onClick={onNextDay}>
+          <ActionButton
+            className="legacy-btn"
+            onClick={() => onNextDay()}
+            disabled={event && event.choices && event.choices.length > 0}
+          >
             下一天
           </ActionButton>
           <ActionButton className="legacy-btn legacy-reset" onClick={onResetGame}>

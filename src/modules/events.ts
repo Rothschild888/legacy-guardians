@@ -10,6 +10,18 @@ export const events: MarketEvent[] = [
     probability: 0.1,
     description: '科技股和加密货币遭遇泡沫，价格大幅下跌。',
     icon: '/images/events/tech-bubble.png',
+    choices: [
+      {
+        text: '政府出手干预',
+        effect: '损失减半',
+        impactRange: { tech: [-0.08, -0.04], crypto: [-0.05, -0.02] }
+      },
+      {
+        text: '任其泡沫破裂',
+        effect: '市场自由调整',
+        impactRange: { tech: [-0.20, -0.10], crypto: [-0.15, -0.08] }
+      }
+    ],
   },
   {
     id: 2,

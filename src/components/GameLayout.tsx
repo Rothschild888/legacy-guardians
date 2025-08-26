@@ -71,9 +71,17 @@ export const GameLayout: React.FC = () => {
         <Sidebar {...{ aiPartnerData, badgesData, badges, history, stars }} onBadgeClick={handlers.badgeClick} />
         
         <GameArea
-          task={task} event={event} artifactsData={artifactsData} weights={weights} returns={returns}
-          volatility={volatility} drawdown={drawdown}
-          onWeightChange={handleWeightChange} onNextDay={nextDay} onResetGame={resetGame}
+          task={task}
+          event={event}
+          history={history}
+          artifactsData={artifactsData}
+          weights={weights}
+          returns={returns}
+          volatility={volatility}
+          drawdown={drawdown}
+          onWeightChange={handleWeightChange}
+          onNextDay={nextDay}
+          onResetGame={resetGame}
           onShowModal={(content) => { setShowModal(true); setModalContent(content); }}
         />
       </div>

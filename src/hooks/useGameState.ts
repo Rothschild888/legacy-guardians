@@ -186,7 +186,58 @@ export const useGameState = () => {
   }, [weights, allowedAssets]);
 
   // Next day function
-  const nextDay = useCallback(() => {
+  const nextDay = useCallback((choiceIndex?: number) => {
+    // Resolve pending event choice
+    if (event && event.choices && choiceIndex !== undefined) {
+      const choice = event.choices[choiceIndex];
+      const selectedEvent = { ...event, impactRange: choice.impactRange };
+      const result = calculateDailyReturns(weights, assetsData, selectedEvent, portfolioValue, peakValue);
+      const dayReturn = result.returns;
+      setReturns(dayReturn);
+      setVolatility(result.volatility);
+      setDrawdown(result.drawdown);
+      setPortfolioValue(result.portfolioValue);
+      setPeakValue(result.peakValue);
+
+      setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
+      if (dayReturn > 50) setGems(g => g + 1);
+      if (dayReturn > 0) addStars(1);
+
+      let newBadges = [...badges];
+      if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
+        newBadges.push('分散者');
+      }
+      if (history.length >= 2 && history.slice(-2).every(h => h.returns > 0) && dayReturn > 0 && !badges.includes('长远目光')) {
+        newBadges.push('长远目光');
+      }
+      if (Object.values(weights).some(w => w > 60) && dayReturn > 0 && !badges.includes('风险管理者')) {
+        newBadges.push('风险管理者');
+      }
+      if ((weights.esg || 0) >= 20 && !badges.includes('绿色先锋')) {
+        newBadges.push('绿色先锋');
+      }
+      if ((weights.gold || 0) >= 20 && !badges.includes('避险守护者')) {
+        newBadges.push('避险守护者');
+      }
+      if ((weights.stablecoin || 0) >= 20 && !badges.includes('平静守护者')) {
+        newBadges.push('平静守护者');
+      }
+      if ((weights.yield || 0) >= 20 && !badges.includes('收益智者')) {
+        newBadges.push('收益智者');
+      }
+      setBadges(newBadges);
+
+      const taskIdx = (day + 1) % tasksData.length;
+      setTask(tasksData[taskIdx]);
+      setDay(day + 1);
+
+      setHistory([...history, { day: day + 1, weights: { ...weights }, eventId: event.id, effect: choice.effect, returns: dayReturn }]);
+
+      // remove choices after resolving
+      setEvent({ ...event, choices: undefined });
+      return;
+    }
+
     // Fun event: meme or surprise
     if (Math.random() < 0.15) {
       setShowModal(true);
@@ -233,12 +284,15 @@ export const useGameState = () => {
     const ev = eventsData[eventIdx];
     setEvent(ev);
 
-    // Pick next task
+    // If event has choices, wait for user decision
+    if (ev.choices && ev.choices.length > 0) {
+      return;
+    }
+
     const taskIdx = (day + 1) % tasksData.length;
     setTask(tasksData[taskIdx]);
     setDay(day + 1);
 
-    // Calculate returns using asset data
     const result = calculateDailyReturns(weights, assetsData, ev, portfolioValue, peakValue);
     const dayReturn = result.returns;
     setReturns(dayReturn);
@@ -247,13 +301,10 @@ export const useGameState = () => {
     setPortfolioValue(result.portfolioValue);
     setPeakValue(result.peakValue);
 
-    // Update coins/gems based on returns
     setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
     if (dayReturn > 50) setGems(g => g + 1);
-
     if (dayReturn > 0) addStars(1);
 
-    // Badge logic
     let newBadges = [...badges];
     if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
       newBadges.push('分散者');
@@ -278,9 +329,8 @@ export const useGameState = () => {
     }
     setBadges(newBadges);
 
-    // Track history
-    setHistory([...history, { day: day + 1, weights: { ...weights }, event: ev, returns: dayReturn }]);
-  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue]);
+    setHistory([...history, { day: day + 1, weights: { ...weights }, eventId: ev.id, effect: ev.description, returns: dayReturn }]);
+  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event]);
 
   return {
     // State

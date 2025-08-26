@@ -40,7 +40,7 @@ export interface MarketEvent {
         affected: string[];
         impactRange: { [key: string]: [number, number] };
         probability: number;
-        choices?: string[];
+        choices?: { text: string; impactRange: { [key: string]: [number, number] }; effect: string }[];
         icon?: string;
 }
 
@@ -101,11 +101,12 @@ export interface GameState {
 }
 
 export interface GameHistory {
-	day: number;
-	weights: { [key: string]: number };
-	event: MarketEvent | null;
-	returns: number;
-	timestamp: Date;
+        day: number;
+        weights: { [key: string]: number };
+        eventId?: number;
+        effect?: string;
+        returns: number;
+        timestamp?: Date;
 }
 
 // User Types
