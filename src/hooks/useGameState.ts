@@ -14,6 +14,7 @@ import {
   calculateDailyReturns,
   generateRandomEvent,
   checkGameEnd,
+  sanitizeWeights,
 } from '../utils/game-logic';
 import { GAME_CONFIG } from '../constants/game-config';
 import {
@@ -206,9 +207,7 @@ export const useGameState = () => {
 
   // Handle weight change
   const handleWeightChange = useCallback((key: string, value: number) => {
-    const sanitized = Object.fromEntries(
-      Object.entries(weights).map(([k, v]) => [k, allowedAssets.includes(k) ? v : 0])
-    ) as { [key: string]: number };
+    const sanitized = sanitizeWeights(weights, allowedAssets);
 
     if (!allowedAssets.includes(key)) {
       setWeights(sanitized);

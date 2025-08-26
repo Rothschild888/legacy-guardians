@@ -15,6 +15,19 @@ const CORRELATIONS: { [key: string]: { [key: string]: number } } = {
 };
 
 /**
+ * Sanitize a weight map so that only allowed assets retain their values.
+ * Disallowed assets are set to 0.
+ */
+export function sanitizeWeights(
+        weights: Record<string, number>,
+        allowed: string[]
+): Record<string, number> {
+        return Object.fromEntries(
+                Object.entries(weights).map(([k, v]) => [k, allowed.includes(k) ? v : 0])
+        ) as Record<string, number>;
+}
+
+/**
  * Calculate daily portfolio metrics including return, volatility and drawdown
  */
 export function calculateDailyReturns(
