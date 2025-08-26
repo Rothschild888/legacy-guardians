@@ -1,7 +1,11 @@
 // Daily flow helper functions
 
 import type { Asset, MarketEvent, Task, GameHistory } from '../types';
-import { calculateDailyReturns, checkBadgeEligibility } from './game-logic';
+import {
+  calculateDailyReturns,
+  checkBadgeEligibility,
+  calculateResourceRewards,
+} from './game-logic';
 import type { TaskGoal } from '../constants/task-goals';
 import { EASTER_EGG_MESSAGE } from '../constants/game-config';
 import { checkEasterEgg, generateRandomDilemma, generateRandomQuiz } from './game-logic';
@@ -55,8 +59,7 @@ export function applyDailyRewards({
   eventId,
   effect,
 }: ApplyDailyRewardsParams) {
-  const coins = Math.max(0, Math.floor(dayReturn / 10));
-  const gems = dayReturn > 50 ? 1 : 0;
+  const { coins, gems } = calculateResourceRewards(dayReturn);
   const stars = dayReturn > 0 ? 1 : 0;
 
   const goal = taskGoals[task.id];
