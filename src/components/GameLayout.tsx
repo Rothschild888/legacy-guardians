@@ -4,7 +4,7 @@ import { ParentControlPanel } from './ParentControlPanel';
 import { useGameState } from '../hooks/useGameState';
 import artifactsData from '../constants/artifacts.json';
 import { badges as badgesData } from '../modules/badges';
-import aiPartnerData from '../constants/ai-partner.json';
+import aiPersonalities from '../constants/ai-personalities.json';
 
 export const GameLayout: React.FC = () => {
   const gameState = useGameState();
@@ -16,17 +16,19 @@ export const GameLayout: React.FC = () => {
     aiChatOpen, aiInput, aiResponse, dilemma, quiz, quizAnswered, endgame,
     showSummary, history, weights, day, returns, event, task, badges,
     showModal, modalContent, pendingCompanyName, avatarOptions,
-    allowedAssets, pendingCoinRequest,
+    allowedAssets, pendingCoinRequest, aiPersonality, aiEnabled,
 
     // Actions
     setCompanyName, setAvatar, setTheme, setWheelOpen, setWheelResult, setWheelUsed,
-    setAiChatOpen, setAiInput, setAiResponse, setDilemma, setQuiz, setQuizAnswered,
+    setAiChatOpen, setAiInput, setAiResponse, setAiPersonality, setAiEnabled, setDilemma, setQuiz, setQuizAnswered,
     setEndgame, setShowSummary, setShowModal, setModalContent, setPendingCompanyName,
 
     // Functions
     handleSpinWheel, handleAiAsk, resetGame, handleWeightChange, nextDay,
     requestCoins, approveCoinRequest, rejectCoinRequest, toggleAllowedAsset
   } = gameState;
+
+  const aiPartnerData = aiPersonalities.find(p => p.id === aiPersonality) || aiPersonalities[0];
 
   // Event handlers
   const handlers = {
@@ -44,7 +46,9 @@ export const GameLayout: React.FC = () => {
     badgeClick: (badge: any) => { setShowModal(true); setModalContent(`${badge.name}\n\n${badge.desc}`); },
     requestCoins: () => requestCoins(20),
     parentOpen: () => setParentOpen(true),
-    parentClose: () => setParentOpen(false)
+    parentClose: () => setParentOpen(false),
+    toggleAi: (enabled: boolean) => { setAiEnabled(enabled); if (!enabled) { setAiChatOpen(false); } },
+    changePersonality: (id: string) => setAiPersonality(id)
   };
 
   return (
@@ -57,6 +61,7 @@ export const GameLayout: React.FC = () => {
       
       <FloatingButtons
         wheelOpen={wheelOpen} wheelResult={wheelResult} wheelUsed={wheelUsed} aiChatOpen={aiChatOpen}
+        aiEnabled={aiEnabled}
         onWheelOpen={() => setWheelOpen(true)} onWheelClose={handlers.wheelClose}
         onSpinWheel={handleSpinWheel} onAiChatOpen={() => setAiChatOpen(true)} onAiChatClose={handlers.aiChatClose}
         onParentOpen={handlers.parentOpen}
@@ -76,9 +81,14 @@ export const GameLayout: React.FC = () => {
         <ParentControlPanel
           pendingRequest={pendingCoinRequest}
           allowedAssets={allowedAssets}
+          aiEnabled={aiEnabled}
+          aiPersonality={aiPersonality}
+          aiPersonalities={aiPersonalities}
           onApprove={approveCoinRequest}
           onReject={rejectCoinRequest}
           onToggleAsset={toggleAllowedAsset}
+          onToggleAi={handlers.toggleAi}
+          onPersonalityChange={handlers.changePersonality}
           onClose={handlers.parentClose}
         />
       )}

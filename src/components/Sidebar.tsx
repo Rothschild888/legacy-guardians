@@ -1,9 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 import { theme } from '../styles/theme';
+import type { AIPartner } from '../types';
 
 interface SidebarProps {
-  aiPartnerData: any;
+  aiPartnerData: AIPartner;
   badgesData: any[];
   badges: string[];
   history: any[];

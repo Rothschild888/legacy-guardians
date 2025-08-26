@@ -6,6 +6,8 @@ import { events as eventsData } from '../modules/events';
 import { badges as badgeData } from '../modules/badges';
 import { dilemmas as dilemmaQuestions } from '../modules/dilemmas';
 import { handleSpinWheel as spinWheel } from '../modules/spinWheel';
+import aiPersonalities from '../constants/ai-personalities.json';
+import { getAiResponse } from '../utils/ai';
 
 export const useGameState = () => {
   // Company/Avatar Customization
@@ -28,6 +30,8 @@ export const useGameState = () => {
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [aiInput, setAiInput] = useState('');
   const [aiResponse, setAiResponse] = useState('');
+  const [aiPersonality, setAiPersonality] = useState<string>(aiPersonalities[0].id);
+  const [aiEnabled, setAiEnabled] = useState(true);
 
   // Dilemma/Quiz state
   const [dilemma, setDilemma] = useState<string | null>(null);
@@ -100,28 +104,12 @@ export const useGameState = () => {
   // Handle AI ask
   const handleAiAsk = useCallback(async () => {
     const input = aiInput.trim();
-    if (!input) return;
+    if (!input || !aiEnabled) return;
     setAiResponse('正在思考...');
-    
-    setTimeout(() => {
-      const funnyReplies = [
-        '你问得太专业了，我得查查我的数据库！',
-        '投资就像玩游戏，记得多收集徽章哦！',
-        '如果市场下跌，不如喝杯奶茶冷静一下？',
-        '分散投资，财富自由，顺便多吃点薯片！',
-        '你是空岛最强守护者，继续冲鸭！',
-        'AI也有点懵，建议你问ChatGPT！',
-        '投资有风险，游戏更有趣！',
-        '如果你赢了，记得截图发朋友圈！',
-        '财富密码：多玩几天，解锁彩蛋！',
-        '我猜你会选A，但B也不错！',
-        '市场风暴来袭，快用你的神器！',
-        '你问的问题让我想起了猫猫狗狗。',
-        '投资路上，记得保持微笑😄！'
-      ];
-      setAiResponse(funnyReplies[Math.floor(Math.random() * funnyReplies.length)]);
-    }, 1200);
-  }, [aiInput]);
+    const personality = aiPersonalities.find(p => p.id === aiPersonality) || aiPersonalities[0];
+    const reply = await getAiResponse(input, weights, personality);
+    setAiResponse(reply);
+  }, [aiInput, weights, aiPersonality, aiEnabled]);
 
   // Reset game function
   const resetGame = useCallback(() => {
@@ -277,6 +265,8 @@ export const useGameState = () => {
     quizResult,
     allowedAssets,
     pendingCoinRequest,
+    aiPersonality,
+    aiEnabled,
     
     // Options
     avatarOptions,
@@ -294,6 +284,8 @@ export const useGameState = () => {
     setAiChatOpen,
     setAiInput,
     setAiResponse,
+    setAiPersonality,
+    setAiEnabled,
     setDilemma,
     setQuiz,
     setQuizAnswered,

@@ -97,7 +97,7 @@ legacy-guardians/
 - `badges.json` → `src/modules/badges.ts`
 - `events.json` → `src/modules/events.ts`
 - `assets.json` → `src/modules/assets.ts`
-- `ai-partner.json` → `src/constants/`
+- `ai-personalities.json` → `src/constants/`
 - `artifacts.json` → `src/constants/`
 
 ### **新创建的文件**

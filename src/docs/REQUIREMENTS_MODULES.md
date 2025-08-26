@@ -172,7 +172,7 @@ Legacy Guardians 游戏系统
 - 个性化反馈
 
 ##### 核心文件
-- `src/constants/ai-partner.json`
+- `src/constants/ai-personalities.json`
 - `src/components/Modals.tsx` (AI聊天部分)
 
 ##### 开发步骤
