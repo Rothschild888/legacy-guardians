@@ -11,6 +11,7 @@ interface TopBarProps {
   gems: number;
   theme: string;
   onEditCompany: () => void;
+  onRequestCoins: () => void;
 }
 
 // Styled Components
@@ -114,6 +115,15 @@ const ResourceBadge = styled.span<{ $type: 'coins' | 'gems' }>`
   }
 `;
 
+const RequestButton = styled.button`
+  background: ${theme.colors.cyber.primary};
+  color: ${theme.colors.cyber.dark};
+  border-radius: 8px;
+  padding: 0.3em 0.6em;
+  font-weight: 700;
+  cursor: pointer;
+`;
+
 export const TopBar: React.FC<TopBarProps> = ({
   companyName,
   avatar,
@@ -122,7 +132,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   coins,
   gems,
   theme: currentTheme,
-  onEditCompany
+  onEditCompany,
+  onRequestCoins
 }) => {
   return (
     <>
@@ -159,6 +170,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <ResourceBadge $type="gems">
             💎 {gems}
           </ResourceBadge>
+          <RequestButton onClick={onRequestCoins}>请求20💰</RequestButton>
         </ResourcesContainer>
       </TopBarContainer>
     </>

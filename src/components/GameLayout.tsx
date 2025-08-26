@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TopBar, Sidebar, GameArea, FloatingButtons, Modals } from './index';
+import { ParentControlPanel } from './ParentControlPanel';
 import { useGameState } from '../hooks/useGameState';
 import artifactsData from '../constants/artifacts.json';
 import { badges as badgesData } from '../modules/badges';
@@ -7,6 +8,7 @@ import aiPartnerData from '../constants/ai-partner.json';
 
 export const GameLayout: React.FC = () => {
   const gameState = useGameState();
+  const [parentOpen, setParentOpen] = useState(false);
   
   const {
     // State
@@ -14,14 +16,16 @@ export const GameLayout: React.FC = () => {
     aiChatOpen, aiInput, aiResponse, dilemma, quiz, quizAnswered, endgame,
     showSummary, history, weights, day, returns, event, task, badges,
     showModal, modalContent, pendingCompanyName, avatarOptions,
-    
+    allowedAssets, pendingCoinRequest,
+
     // Actions
     setCompanyName, setAvatar, setTheme, setWheelOpen, setWheelResult, setWheelUsed,
     setAiChatOpen, setAiInput, setAiResponse, setDilemma, setQuiz, setQuizAnswered,
     setEndgame, setShowSummary, setShowModal, setModalContent, setPendingCompanyName,
-    
+
     // Functions
-    handleSpinWheel, handleAiAsk, resetGame, handleWeightChange, nextDay
+    handleSpinWheel, handleAiAsk, resetGame, handleWeightChange, nextDay,
+    requestCoins, approveCoinRequest, rejectCoinRequest, toggleAllowedAsset
   } = gameState;
 
   // Event handlers
@@ -37,17 +41,25 @@ export const GameLayout: React.FC = () => {
     },
     endgameClose: () => setEndgame(false),
     summaryClose: () => { setShowSummary(false); setEndgame(false); resetGame(); },
-    badgeClick: (badge: any) => { setShowModal(true); setModalContent(`${badge.name}\n\n${badge.desc}`); }
+    badgeClick: (badge: any) => { setShowModal(true); setModalContent(`${badge.name}\n\n${badge.desc}`); },
+    requestCoins: () => requestCoins(20),
+    parentOpen: () => setParentOpen(true),
+    parentClose: () => setParentOpen(false)
   };
 
   return (
     <div className="legacy-container" style={{ paddingTop: 0, maxWidth: '1200px', margin: '2rem auto' }}>
-      <TopBar {...{ companyName, avatar, badges, day, coins, gems, theme }} onEditCompany={handlers.editCompany} />
+      <TopBar
+        {...{ companyName, avatar, badges, day, coins, gems, theme }}
+        onEditCompany={handlers.editCompany}
+        onRequestCoins={handlers.requestCoins}
+      />
       
       <FloatingButtons
         wheelOpen={wheelOpen} wheelResult={wheelResult} wheelUsed={wheelUsed} aiChatOpen={aiChatOpen}
         onWheelOpen={() => setWheelOpen(true)} onWheelClose={handlers.wheelClose}
         onSpinWheel={handleSpinWheel} onAiChatOpen={() => setAiChatOpen(true)} onAiChatClose={handlers.aiChatClose}
+        onParentOpen={handlers.parentOpen}
       />
 
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'nowrap', marginBottom: '2rem' }}>
@@ -59,6 +71,17 @@ export const GameLayout: React.FC = () => {
           onShowModal={(content) => { setShowModal(true); setModalContent(content); }}
         />
       </div>
+
+      {parentOpen && (
+        <ParentControlPanel
+          pendingRequest={pendingCoinRequest}
+          allowedAssets={allowedAssets}
+          onApprove={approveCoinRequest}
+          onReject={rejectCoinRequest}
+          onToggleAsset={toggleAllowedAsset}
+          onClose={handlers.parentClose}
+        />
+      )}
 
       <Modals
         showModal={showModal} modalContent={modalContent} aiChatOpen={aiChatOpen}

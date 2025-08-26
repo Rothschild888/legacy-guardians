@@ -16,6 +16,8 @@ export const useGameState = () => {
   // Resource Management
   const [coins, setCoins] = useState(100);
   const [gems, setGems] = useState(5);
+  const [allowedAssets, setAllowedAssets] = useState<string[]>(['tech','bond','gold','crypto','esg','stablecoin','yield']);
+  const [pendingCoinRequest, setPendingCoinRequest] = useState<number | null>(null);
 
   // Spin the Wheel state
   const [wheelOpen, setWheelOpen] = useState(false);
@@ -62,6 +64,26 @@ export const useGameState = () => {
     'https://cdn-icons-png/flaticon.com/512/616/616408.png',
     'https://cdn-icons-png.flaticon.com/512/616/616408.png'
   ];
+
+  // Parent controls
+  const requestCoins = useCallback((amount: number) => {
+    setPendingCoinRequest(amount);
+  }, []);
+
+  const approveCoinRequest = useCallback(() => {
+    if (pendingCoinRequest !== null) {
+      setCoins(c => c + pendingCoinRequest);
+      setPendingCoinRequest(null);
+    }
+  }, [pendingCoinRequest]);
+
+  const rejectCoinRequest = useCallback(() => setPendingCoinRequest(null), []);
+
+  const toggleAllowedAsset = useCallback((asset: string) => {
+    setAllowedAssets(prev =>
+      prev.includes(asset) ? prev.filter(a => a !== asset) : [...prev, asset]
+    );
+  }, []);
 
 
   // Handle spin wheel
@@ -120,13 +142,14 @@ export const useGameState = () => {
 
   // Handle weight change
   const handleWeightChange = useCallback((key: string, value: number) => {
-    const total = Object.entries(weights).reduce((sum, [k, v]) => 
+    if (!allowedAssets.includes(key)) return;
+    const total = Object.entries(weights).reduce((sum, [k, v]) =>
       k === key ? sum + value : sum + (v as number), 0
     );
     if (total <= 100) {
       setWeights({ ...weights, [key]: value });
     }
-  }, [weights]);
+  }, [weights, allowedAssets]);
 
   // Next day function
   const nextDay = useCallback(() => {
@@ -252,6 +275,8 @@ export const useGameState = () => {
     pendingCompanyName,
     quizActive,
     quizResult,
+    allowedAssets,
+    pendingCoinRequest,
     
     // Options
     avatarOptions,
@@ -286,12 +311,16 @@ export const useGameState = () => {
     setPendingCompanyName,
     setQuizActive,
     setQuizResult,
-    
+
     // Functions
     handleSpinWheel,
     handleAiAsk,
     resetGame,
     handleWeightChange,
-    nextDay
+    nextDay,
+    requestCoins,
+    approveCoinRequest,
+    rejectCoinRequest,
+    toggleAllowedAsset
   };
 };
