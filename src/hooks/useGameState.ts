@@ -12,6 +12,41 @@ import { assets as assetsData } from '../modules/assets';
 import { getAiResponse } from '../utils/ai';
 import { calculateDailyReturns } from '../utils/game-logic';
 
+// Task objectives and rewards
+const taskGoals: {
+  [id: number]: {
+    objective: string;
+    check: (w: { [key: string]: number }) => boolean;
+    reward: { coins: number; gems: number; badge?: string };
+  };
+} = {
+  1: {
+    objective: '保持多元化：任何单一资产不超过50%',
+    check: (w) => Math.max(...Object.values(w)) <= 50,
+    reward: { coins: 20, gems: 1, badge: '分散者' },
+  },
+  2: {
+    objective: 'ESG 配置至少20%',
+    check: (w) => (w.esg || 0) >= 20,
+    reward: { coins: 20, gems: 1, badge: '绿色先锋' },
+  },
+  3: {
+    objective: '黄金配置至少20%',
+    check: (w) => (w.gold || 0) >= 20,
+    reward: { coins: 20, gems: 1, badge: '避险守护者' },
+  },
+  4: {
+    objective: '稳定币配置至少20%',
+    check: (w) => (w.stablecoin || 0) >= 20,
+    reward: { coins: 20, gems: 1, badge: '平静守护者' },
+  },
+  5: {
+    objective: '收益资产配置至少20%',
+    check: (w) => (w.yield || 0) >= 20,
+    reward: { coins: 20, gems: 1, badge: '收益智者' },
+  },
+};
+
 export const useGameState = () => {
   // Company/Avatar Customization
   const [companyName, setCompanyName] = useState('我的空岛公司');
@@ -63,6 +98,10 @@ export const useGameState = () => {
   const [peakValue, setPeakValue] = useState(1);
   const [event, setEvent] = useState<any>(null);
   const [task, setTask] = useState<any>(tasksData[0]);
+  const [taskObjective, setTaskObjective] = useState<string>(taskGoals[tasksData[0].id].objective);
+  const [lastTaskResult, setLastTaskResult] = useState<
+    { title: string; completed: boolean; reward: { coins: number; gems: number; badge?: string } } | null
+  >(null);
   const [badges, setBadges] = useState<string[]>([]);
 
   // Sidebar/modal state
@@ -154,6 +193,8 @@ export const useGameState = () => {
     setReturns(null);
     setEvent(null);
     setTask(tasksData[0]);
+    setTaskObjective(taskGoals[tasksData[0].id].objective);
+    setLastTaskResult(null);
     setBadges([]);
     setHistory([]);
     setVolatility(null);
@@ -203,6 +244,14 @@ export const useGameState = () => {
       if (dayReturn > 50) setGems(g => g + 1);
       if (dayReturn > 0) addStars(1);
 
+      const goal = taskGoals[task.id];
+      let taskCompleted = false;
+      if (goal && goal.check(weights)) {
+        taskCompleted = true;
+        setCoins(c => c + goal.reward.coins);
+        setGems(g => g + goal.reward.gems);
+      }
+
       let newBadges = [...badges];
       if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
         newBadges.push('分散者');
@@ -225,13 +274,31 @@ export const useGameState = () => {
       if ((weights.yield || 0) >= 20 && !badges.includes('收益智者')) {
         newBadges.push('收益智者');
       }
+      if (goal && taskCompleted && goal.reward.badge && !newBadges.includes(goal.reward.badge)) {
+        newBadges.push(goal.reward.badge);
+      }
       setBadges(newBadges);
 
       const taskIdx = (day + 1) % tasksData.length;
       setTask(tasksData[taskIdx]);
+      setTaskObjective(taskGoals[tasksData[taskIdx].id].objective);
       setDay(day + 1);
 
-      setHistory([...history, { day: day + 1, weights: { ...weights }, eventId: event.id, effect: choice.effect, returns: dayReturn }]);
+      setHistory([
+        ...history,
+        {
+          day: day + 1,
+          weights: { ...weights },
+          eventId: event.id,
+          effect: choice.effect,
+          returns: dayReturn,
+          taskId: task.id,
+          taskCompleted,
+          reward: taskCompleted ? goal.reward : undefined,
+        },
+      ]);
+
+      setLastTaskResult(goal ? { title: task.title, completed: taskCompleted, reward: goal.reward } : null);
 
       // remove choices after resolving
       setEvent({ ...event, choices: undefined });
@@ -291,6 +358,7 @@ export const useGameState = () => {
 
     const taskIdx = (day + 1) % tasksData.length;
     setTask(tasksData[taskIdx]);
+    setTaskObjective(taskGoals[tasksData[taskIdx].id].objective);
     setDay(day + 1);
 
     const result = calculateDailyReturns(weights, assetsData, ev, portfolioValue, peakValue);
@@ -304,6 +372,14 @@ export const useGameState = () => {
     setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
     if (dayReturn > 50) setGems(g => g + 1);
     if (dayReturn > 0) addStars(1);
+
+    const goal = taskGoals[task.id];
+    let taskCompleted = false;
+    if (goal && goal.check(weights)) {
+      taskCompleted = true;
+      setCoins(c => c + goal.reward.coins);
+      setGems(g => g + goal.reward.gems);
+    }
 
     let newBadges = [...badges];
     if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
@@ -327,10 +403,27 @@ export const useGameState = () => {
     if ((weights.yield || 0) >= 20 && !badges.includes('收益智者')) {
       newBadges.push('收益智者');
     }
+    if (goal && taskCompleted && goal.reward.badge && !newBadges.includes(goal.reward.badge)) {
+      newBadges.push(goal.reward.badge);
+    }
     setBadges(newBadges);
 
-    setHistory([...history, { day: day + 1, weights: { ...weights }, eventId: ev.id, effect: ev.description, returns: dayReturn }]);
-  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event]);
+    setHistory([
+      ...history,
+      {
+        day: day + 1,
+        weights: { ...weights },
+        eventId: ev.id,
+        effect: ev.description,
+        returns: dayReturn,
+        taskId: task.id,
+        taskCompleted,
+        reward: taskCompleted ? goal.reward : undefined,
+      },
+    ]);
+
+    setLastTaskResult(goal ? { title: task.title, completed: taskCompleted, reward: goal.reward } : null);
+  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task]);
 
   return {
     // State
@@ -360,6 +453,8 @@ export const useGameState = () => {
     drawdown,
     event,
     task,
+    taskObjective,
+    lastTaskResult,
     badges,
     showModal,
     modalContent,
