@@ -10,6 +10,7 @@ legacy-guardians/
 │   ├── 📁 types/              # TypeScript类型定义
 │   ├── 📁 utils/              # 工具函数
 │   ├── 📁 constants/          # 常量和配置
+│   ├── 📁 modules/            # 游戏数据模块
 │   ├── 📁 styles/             # 样式文件
 │   ├── 📁 assets/             # 静态资源
 │   ├── 📁 services/           # 服务层
@@ -54,9 +55,16 @@ legacy-guardians/
 
 ### **`src/constants/` - 常量和配置**
 - 游戏配置 (`game-config.ts`)
-- 数据文件 (JSON)
+- 任务/神器等静态JSON
 - 环境变量
 - 静态配置
+
+### **`src/modules/` - 游戏数据模块**
+- 资产定义 (`assets.ts`)
+- 徽章定义 (`badges.ts`)
+- 事件定义 (`events.ts`)
+- 困境问题 (`dilemmas.ts`)
+- 幸运转盘 (`spinWheel.ts`)
 
 ### **`src/styles/` - 样式文件**
 - CSS样式表
@@ -86,10 +94,11 @@ legacy-guardians/
 ### **已移动的文件**
 - `legacy-ui.css` → `src/styles/`
 - `legacy-cyberpunk.css` → `src/styles/`
-- `badges.json` → `src/constants/`
+- `badges.json` → `src/modules/badges.ts`
+- `events.json` → `src/modules/events.ts`
+- `assets.json` → `src/modules/assets.ts`
 - `ai-partner.json` → `src/constants/`
 - `artifacts.json` → `src/constants/`
-- `data/*.json` → `src/constants/`
 
 ### **新创建的文件**
 - `src/types/index.ts` - 类型定义
@@ -97,6 +106,8 @@ legacy-guardians/
 - `src/utils/game-logic.ts` - 游戏逻辑
 - `src/hooks/useGameState.ts` - 游戏状态Hook
 - `src/styles/index.ts` - 样式索引
+- `src/modules/dilemmas.ts` - 困境问题
+- `src/modules/spinWheel.ts` - 幸运转盘逻辑
 
 ## 📋 **导入路径更新**
 
@@ -118,7 +129,10 @@ import badgesData from './badges.json';
 
 // 新方式
 import artifactsData from './constants/artifacts.json';
-import badgesData from './constants/badges.json';
+import { badges } from './modules/badges';
+import { events } from './modules/events';
+import { dilemmas } from './modules/dilemmas';
+import { handleSpinWheel } from './modules/spinWheel';
 ```
 
 ### **类型导入**
@@ -134,7 +148,7 @@ import { calculateDailyReturns } from './utils/game-logic';
 ### **1. 关注点分离**
 - 组件只负责UI渲染
 - 业务逻辑放在Hooks和工具函数中
-- 数据配置集中在constants目录
+- 数据配置集中在constants和modules目录
 
 ### **2. 可维护性**
 - 清晰的目录结构

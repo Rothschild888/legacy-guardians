@@ -2,7 +2,7 @@ import React from 'react';
 import { TopBar, Sidebar, GameArea, FloatingButtons, Modals } from './index';
 import { useGameState } from '../hooks/useGameState';
 import artifactsData from '../constants/artifacts.json';
-import badgesData from '../constants/badges.json';
+import { badges as badgesData } from '../modules/badges';
 import aiPartnerData from '../constants/ai-partner.json';
 
 export const GameLayout: React.FC = () => {
