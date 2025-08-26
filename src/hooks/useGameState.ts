@@ -310,8 +310,8 @@ export const useGameState = () => {
       setTimeout(() => setShowSummary(true), 2500);
     }
 
-    // Pick a random event
-    const ev = generateRandomEvent(eventsData);
+    // Pick a random event based on allowed assets
+    const ev = generateRandomEvent(eventsData, allowedAssets);
     setEvent(ev);
 
     // If event has choices, wait for user decision
