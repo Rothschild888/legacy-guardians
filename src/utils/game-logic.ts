@@ -158,10 +158,10 @@ export function generateRandomEvent(events: MarketEvent[]): MarketEvent | null {
 /**
  * Generate random dilemma question
  */
-export function generateRandomDilemma(
-	questions: string[],
-	askedQuestions: number[]
-): string | null {
+export function generateRandomDilemma<T>(
+        questions: T[],
+        askedQuestions: number[]
+): T | null {
 	if (Math.random() > GAME_CONFIG.DILEMMA_PROBABILITY) {
 		return null;
 	}
