@@ -4,6 +4,8 @@ import { theme } from '../styles/theme';
 
 interface GameAreaProps {
   task: any;
+  taskObjective: string;
+  lastTaskResult: { title: string; completed: boolean; reward: { coins: number; gems: number; badge?: string } } | null;
   event: any;
   history: any[];
   artifactsData: any[];
@@ -234,6 +236,8 @@ const ActionButton = styled.button`
 
 export const GameArea: React.FC<GameAreaProps> = ({
   task,
+  taskObjective,
+  lastTaskResult,
   event,
   history,
   artifactsData,
@@ -264,6 +268,12 @@ export const GameArea: React.FC<GameAreaProps> = ({
           <TaskTitle>{task?.title || '暂无任务'}</TaskTitle>
           <TaskBackground>{task?.background || ''}</TaskBackground>
           <TaskTip>{task?.tip || ''}</TaskTip>
+          {taskObjective && <TaskTip>目标：{taskObjective}</TaskTip>}
+          {lastTaskResult && (
+            <TaskTip>
+              上个任务{lastTaskResult.completed ? `完成✅ 奖励：+${lastTaskResult.reward.coins}币 +${lastTaskResult.reward.gems}宝石${lastTaskResult.reward.badge ? ` +徽章：${lastTaskResult.reward.badge}` : ''}` : '未完成❌'}
+            </TaskTip>
+          )}
         </Card>
         
         <Card className="legacy-card">
