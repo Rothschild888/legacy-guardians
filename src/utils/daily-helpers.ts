@@ -5,6 +5,7 @@ import {
   calculateDailyReturns,
   checkBadgeEligibility,
   calculateResourceRewards,
+  sanitizeWeights,
 } from './game-logic';
 import type { TaskGoal } from '../constants/task-goals';
 import { EASTER_EGG_MESSAGE } from '../constants/game-config';
@@ -78,9 +79,7 @@ export function applyDailyRewards({
     newBadges.push(goal.reward.badge);
   }
 
-  const sanitizedWeights = Object.fromEntries(
-    Object.entries(weights).map(([k, v]) => [k, allowedAssets.includes(k) ? v : 0])
-  );
+  const sanitizedWeights = sanitizeWeights(weights, allowedAssets);
 
   const historyEntry = {
     day: day + 1,
