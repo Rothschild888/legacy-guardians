@@ -37,7 +37,7 @@ export const useGameState = () => {
   const [showSummary, setShowSummary] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [askedDilemmas, setAskedDilemmas] = useState<number[]>([]);
-  const [weights, setWeights] = useState<{ [key: string]: number }>({ tech: 25, bond: 25, commodity: 25, crypto: 25 });
+  const [weights, setWeights] = useState<{ [key: string]: number }>({ tech: 16, bond: 16, gold: 16, crypto: 16, esg: 16, stablecoin: 10, yield: 10 });
   const [day, setDay] = useState(0);
   const [returns, setReturns] = useState<number | null>(null);
   const [event, setEvent] = useState<any>(null);
@@ -103,7 +103,7 @@ export const useGameState = () => {
 
   // Reset game function
   const resetGame = useCallback(() => {
-    setWeights({ tech: 25, bond: 25, commodity: 25, crypto: 25 });
+    setWeights({ tech: 16, bond: 16, gold: 16, crypto: 16, esg: 16, stablecoin: 10, yield: 10 });
     setDay(0);
     setReturns(null);
     setEvent(null);
@@ -203,6 +203,18 @@ export const useGameState = () => {
     }
     if (Object.values(weights).some(w => w > 60) && dayReturn > 0 && !badges.includes('风险管理者')) {
       newBadges.push('风险管理者');
+    }
+    if ((weights.esg || 0) >= 20 && !badges.includes('绿色先锋')) {
+      newBadges.push('绿色先锋');
+    }
+    if ((weights.gold || 0) >= 20 && !badges.includes('避险守护者')) {
+      newBadges.push('避险守护者');
+    }
+    if ((weights.stablecoin || 0) >= 20 && !badges.includes('平静守护者')) {
+      newBadges.push('平静守护者');
+    }
+    if ((weights.yield || 0) >= 20 && !badges.includes('收益智者')) {
+      newBadges.push('收益智者');
     }
     setBadges(newBadges);
 

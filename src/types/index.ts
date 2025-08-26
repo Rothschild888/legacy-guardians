@@ -17,7 +17,7 @@ export interface Artifact {
 	key: string;
 	name: string;
 	icon: string;
-	theme: 'forest' | 'snow' | 'volcano' | 'crystal';
+        theme: 'forest' | 'snow' | 'palace' | 'starsea' | 'oasis' | 'lake' | 'temple';
 	description: string;
 	riskLevel: 'low' | 'medium' | 'high';
 }
