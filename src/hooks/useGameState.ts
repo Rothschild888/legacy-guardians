@@ -19,7 +19,7 @@ import {
   checkBadgeEligibility,
   checkGameEnd,
 } from '../utils/game-logic';
-import { GAME_CONFIG } from '../constants/game-config';
+import { GAME_CONFIG, EASTER_EGG_MESSAGE } from '../constants/game-config';
 import { INITIAL_STATE } from '../constants/initial-state';
 
 export const useGameState = () => {
@@ -278,7 +278,7 @@ export const useGameState = () => {
     // Fun event: meme or surprise
     if (checkEasterEgg()) {
       setShowModal(true);
-      setModalContent('🎉 彩蛋事件：你发现了一只会跳舞的柴犬！\n\n奖励：收益+5%，心情+100！');
+      setModalContent(EASTER_EGG_MESSAGE);
       setReturns(r => (r !== null ? r + 5 : 5));
       setCoins(c => c + 10);
       setGems(g => g + 1);
