@@ -23,7 +23,7 @@ export const GAME_CONFIG = {
 	
 	// Returns and Rewards
 	BASE_DAILY_RETURN: 0.02, // 2% base return
-	COIN_REWARD_RATIO: 0.1, // 10% of returns as coins
+        COIN_REWARD_RATIO: 1, // 1 coin per percentage point of returns
 	GEM_REWARD_THRESHOLD: 50, // 50% return threshold for gem reward
 	
 	// Badge Requirements

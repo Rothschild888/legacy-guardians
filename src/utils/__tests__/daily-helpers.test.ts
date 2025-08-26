@@ -47,7 +47,7 @@ describe('applyDailyRewards', () => {
       eventId: 123,
       effect: 'effect',
     });
-    expect(result.coins).toBe(26);
+    expect(result.coins).toBe(80);
     expect(result.gems).toBe(2);
     expect(result.stars).toBe(1);
     expect(result.newBadges).toContain('分散者');
