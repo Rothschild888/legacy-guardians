@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '../styles/theme';
-import type { AIPartner } from '../types';
+import type { AIPartner, Dilemma } from '../types';
 
 interface ModalsProps {
   showModal: boolean;
   modalContent: string;
   aiChatOpen: boolean;
-  dilemma: string | null;
+  dilemma: Dilemma | null;
   quiz: any;
   quizAnswered: string | null;
   endgame: boolean;
@@ -28,6 +28,7 @@ interface ModalsProps {
   onThemeChange: (theme: string) => void;
   onPendingCompanyNameChange: (name: string) => void;
   onDilemmaClose: () => void;
+  onDilemmaAnswer: (optionIndex: number) => string;
   onQuizAnswer: (answer: string) => void;
   onQuizClose: () => void;
   onEndgameClose: () => void;
@@ -339,6 +340,7 @@ export const Modals: React.FC<ModalsProps> = ({
   onThemeChange,
   onPendingCompanyNameChange,
   onDilemmaClose,
+  onDilemmaAnswer,
   onQuizAnswer,
   onQuizClose,
   onEndgameClose,
@@ -348,10 +350,11 @@ export const Modals: React.FC<ModalsProps> = ({
   onAiChatClose,
   onResetGame
 }) => {
-  // Helper to extract options from dilemma question
-  const getDilemmaOptions = (q: string) => {
-    return ['A. 坚持长期持有', 'B. 立即止损', 'C. 增加投资'];
-  };
+  const [dilemmaResult, setDilemmaResult] = useState<string | null>(null);
+
+  useEffect(() => {
+    setDilemmaResult(null);
+  }, [dilemma]);
 
   return (
     <>
@@ -467,18 +470,30 @@ export const Modals: React.FC<ModalsProps> = ({
         <ModalOverlay>
           <ModalContent $variant="dilemma">
             <ModalTitle $color={theme.colors.cyber.secondary}>决策时刻</ModalTitle>
-            <DilemmaText>{dilemma}</DilemmaText>
-            <DilemmaOptions>
-              {getDilemmaOptions(dilemma).map((opt, idx) => (
-                <ModalButton 
-                  $variant="primary" 
-                  key={opt+idx} 
-                  onClick={onDilemmaClose}
-                >
-                  {opt}
+            <DilemmaText>{dilemma.text}</DilemmaText>
+            {dilemmaResult ? (
+              <>
+                <DilemmaText>{dilemmaResult}</DilemmaText>
+                <ModalButton $variant="primary" onClick={onDilemmaClose}>
+                  继续
                 </ModalButton>
-              ))}
-            </DilemmaOptions>
+              </>
+            ) : (
+              <DilemmaOptions>
+                {dilemma.options.map((opt, idx) => (
+                  <ModalButton
+                    $variant="primary"
+                    key={idx}
+                    onClick={() => {
+                      const res = onDilemmaAnswer(idx);
+                      setDilemmaResult(res);
+                    }}
+                  >
+                    {opt.text}
+                  </ModalButton>
+                ))}
+              </DilemmaOptions>
+            )}
           </ModalContent>
         </ModalOverlay>
       )}

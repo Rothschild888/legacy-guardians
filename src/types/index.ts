@@ -55,9 +55,16 @@ export interface Badge {
 }
 
 // Dilemma Types
+export interface DilemmaOption {
+        text: string;
+        consequence: string;
+        skill: 'diversification' | 'risk-management' | 'knowledge';
+}
+
 export interface Dilemma {
         text: string;
         icon?: string;
+        options: DilemmaOption[];
 }
 
 // Spin Wheel Types

@@ -1,6 +1,7 @@
 // Legacy Guardians - Game State Hook
 
 import { useState, useCallback } from 'react';
+import { Dilemma } from '../types';
 import tasksData from '../constants/tasks.json';
 import { events as eventsData } from '../modules/events';
 import { badges as badgeData } from '../modules/badges';
@@ -38,7 +39,8 @@ export const useGameState = () => {
   const [aiEnabled, setAiEnabled] = useState(true);
 
   // Dilemma/Quiz state
-  const [dilemma, setDilemma] = useState<string | null>(null);
+  const [dilemma, setDilemma] = useState<Dilemma | null>(null);
+  const [currentDilemmaIndex, setCurrentDilemmaIndex] = useState<number | null>(null);
   const [quiz, setQuiz] = useState<{ question: string, options: string[], answer: string } | null>(null);
   const [quizAnswered, setQuizAnswered] = useState<string | null>(null);
 
@@ -46,7 +48,12 @@ export const useGameState = () => {
   const [endgame, setEndgame] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
-  const [askedDilemmas, setAskedDilemmas] = useState<number[]>([]);
+  const [completedDilemmas, setCompletedDilemmas] = useState<number[]>([]);
+  const [skillProgress, setSkillProgress] = useState<{ [key: string]: number }>({
+    diversification: 0,
+    'risk-management': 0,
+    knowledge: 0
+  });
   const [weights, setWeights] = useState<{ [key: string]: number }>({ tech: 16, bond: 16, gold: 16, crypto: 16, esg: 16, stablecoin: 10, yield: 10 });
   const [day, setDay] = useState(0);
   const [returns, setReturns] = useState<number | null>(null);
@@ -106,6 +113,18 @@ export const useGameState = () => {
     });
   }, []);
 
+  const handleDilemmaAnswer = useCallback((optionIndex: number) => {
+    if (!dilemma || currentDilemmaIndex === null) return '';
+    const option = dilemma.options[optionIndex];
+    setCompletedDilemmas(prev => [...prev, currentDilemmaIndex]);
+    setSkillProgress(prev => ({
+      ...prev,
+      [option.skill]: (prev[option.skill] || 0) + 1,
+    }));
+    setCurrentDilemmaIndex(null);
+    return option.consequence;
+  }, [dilemma, currentDilemmaIndex]);
+
 
   // Handle spin wheel
   const handleSpinWheel = useCallback(() => {
@@ -149,6 +168,10 @@ export const useGameState = () => {
     setProgress(0);
     setEndgame(false);
     setShowSummary(false);
+    setDilemma(null);
+    setCurrentDilemmaIndex(null);
+    setCompletedDilemmas([]);
+    setSkillProgress({ diversification: 0, 'risk-management': 0, knowledge: 0 });
   }, []);
 
   // Handle weight change
@@ -177,11 +200,11 @@ export const useGameState = () => {
 
     // Randomly trigger a dilemma or quiz
     if (Math.random() < 0.4) {
-      const available = dilemmaQuestions.map((_, i) => i).filter(i => !askedDilemmas.includes(i));
+      const available = dilemmaQuestions.map((_, i) => i).filter(i => !completedDilemmas.includes(i));
       if (available.length > 0) {
         const idx = available[Math.floor(Math.random() * available.length)];
-        setDilemma(dilemmaQuestions[idx].text);
-        setAskedDilemmas(prev => [...prev, idx]);
+        setDilemma(dilemmaQuestions[idx]);
+        setCurrentDilemmaIndex(idx);
         return;
       }
     }
@@ -257,7 +280,7 @@ export const useGameState = () => {
 
     // Track history
     setHistory([...history, { day: day + 1, weights: { ...weights }, event: ev, returns: dayReturn }]);
-  }, [day, returns, badges, weights, history, askedDilemmas, portfolioValue, peakValue]);
+  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue]);
 
   return {
     // State
@@ -297,6 +320,8 @@ export const useGameState = () => {
     pendingCoinRequest,
     aiPersonality,
     aiEnabled,
+    completedDilemmas,
+    skillProgress,
     
     // Options
     avatarOptions,
@@ -348,6 +373,7 @@ export const useGameState = () => {
     approveCoinRequest,
     rejectCoinRequest,
     toggleAllowedAsset,
-    addStars
+    addStars,
+    handleDilemmaAnswer
   };
 };

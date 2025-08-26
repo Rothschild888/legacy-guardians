@@ -25,7 +25,7 @@ export const GameLayout: React.FC = () => {
 
     // Functions
     handleSpinWheel, handleAiAsk, resetGame, handleWeightChange, nextDay,
-    requestCoins, approveCoinRequest, rejectCoinRequest, toggleAllowedAsset
+    requestCoins, approveCoinRequest, rejectCoinRequest, toggleAllowedAsset, handleDilemmaAnswer
   } = gameState;
 
   const aiPartnerData = aiPersonalities.find(p => p.id === aiPersonality) || aiPersonalities[0];
@@ -102,7 +102,7 @@ export const GameLayout: React.FC = () => {
         aiResponse={aiResponse} returns={returns} badges={badges}
         onModalClose={handlers.modalClose} onCompanyNameChange={setCompanyName} onAvatarChange={setAvatar}
         onThemeChange={setTheme} onPendingCompanyNameChange={setPendingCompanyName}
-        onDilemmaClose={handlers.dilemmaClose} onQuizAnswer={handlers.quizAnswer}
+        onDilemmaClose={handlers.dilemmaClose} onDilemmaAnswer={handleDilemmaAnswer} onQuizAnswer={handlers.quizAnswer}
         onQuizClose={() => setQuiz(null)} onEndgameClose={handlers.endgameClose}
         onSummaryClose={handlers.summaryClose} onAiInputChange={setAiInput}
         onAiAsk={handleAiAsk} onAiChatClose={handlers.aiChatClose} onResetGame={resetGame}
