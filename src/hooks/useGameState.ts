@@ -69,6 +69,7 @@ export const useGameState = () => {
   const [drawdown, setDrawdown] = useState<number | null>(INITIAL_STATE.drawdown);
   const [portfolioValue, setPortfolioValue] = useState(INITIAL_STATE.portfolioValue);
   const [peakValue, setPeakValue] = useState(INITIAL_STATE.peakValue);
+  const cumulativeReturn = (portfolioValue - 1) * 100;
   const [event, setEvent] = useState<any>(INITIAL_STATE.event);
   const [task, setTask] = useState<any>(INITIAL_STATE.task);
   const [taskObjective, setTaskObjective] = useState<string>(INITIAL_STATE.taskObjective);
@@ -301,8 +302,7 @@ export const useGameState = () => {
 
     // Endgame trigger
     if (
-      returns !== null &&
-      checkGameEnd(returns, badges, GAME_CONFIG.MAX_BADGES) &&
+      checkGameEnd(cumulativeReturn, badges, GAME_CONFIG.MAX_BADGES) &&
       !endgame
     ) {
       setEndgame(true);
@@ -350,7 +350,7 @@ export const useGameState = () => {
     setBadges(rewards.newBadges);
     setHistory([...history, rewards.historyEntry]);
     setLastTaskResult(rewards.lastTaskResult);
-  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task, allowedAssets, endgame]);
+  }, [day, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task, allowedAssets, endgame, cumulativeReturn]);
 
   return {
     // State
@@ -378,6 +378,8 @@ export const useGameState = () => {
     returns,
     volatility,
     drawdown,
+    portfolioValue,
+    cumulativeReturn,
     event,
     task,
     taskObjective,

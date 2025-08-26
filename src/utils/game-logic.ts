@@ -144,17 +144,17 @@ export function calculateResourceRewards(returns: number): { coins: number; gems
 }
 
 /**
- * Check if game should end
+ * Check if game should end based on cumulative performance
  */
 export function checkGameEnd(
-        returns: number,
+        cumulativeReturn: number,
         badges: string[],
         maxBadges: number
 ): boolean {
         const wealthGoal = GAME_CONFIG.WEALTH_GOAL;
         const hasAllBadges = badges.length >= maxBadges;
 
-        return returns >= wealthGoal && hasAllBadges;
+        return cumulativeReturn >= wealthGoal && hasAllBadges;
 }
 
 /**
