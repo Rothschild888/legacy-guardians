@@ -82,13 +82,15 @@ export interface AIPartner {
 
 // Game State Types
 export interface GameState {
-	day: number;
-	weights: { [key: string]: number };
-	returns: number | null;
-	coins: number;
-	gems: number;
-	badges: string[];
-	history: GameHistory[];
+        day: number;
+        weights: { [key: string]: number };
+        returns: number | null;
+        volatility: number | null;
+        drawdown: number | null;
+        coins: number;
+        gems: number;
+        badges: string[];
+        history: GameHistory[];
 }
 
 export interface GameHistory {
