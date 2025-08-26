@@ -13,13 +13,14 @@ import { taskGoals } from '../constants/task-goals';
 import {
   calculateDailyReturns,
   generateRandomEvent,
-  generateRandomDilemma,
-  generateRandomQuiz,
-  checkEasterEgg,
-  checkBadgeEligibility,
   checkGameEnd,
 } from '../utils/game-logic';
-import { GAME_CONFIG, EASTER_EGG_MESSAGE } from '../constants/game-config';
+import { GAME_CONFIG } from '../constants/game-config';
+import {
+  resolveEventChoice,
+  applyDailyRewards,
+  maybeTriggerEncounter,
+} from '../utils/daily-helpers';
 import { INITIAL_STATE } from '../constants/initial-state';
 
 export const useGameState = () => {
@@ -215,92 +216,75 @@ export const useGameState = () => {
 
   // Next day function
   const nextDay = useCallback((choiceIndex?: number) => {
-    // Resolve pending event choice
     if (event && event.choices && choiceIndex !== undefined) {
-      const choice = event.choices[choiceIndex];
-      const selectedEvent = { ...event, impactRange: choice.impactRange };
-      const result = calculateDailyReturns(weights, assetsData, selectedEvent, portfolioValue, peakValue);
-      const dayReturn = result.returns;
+      const resolution = resolveEventChoice({
+        event,
+        choiceIndex,
+        weights,
+        assets: assetsData,
+        portfolioValue,
+        peakValue,
+      });
+      const dayReturn = resolution.result.returns;
       setReturns(dayReturn);
-      setVolatility(result.volatility);
-      setDrawdown(result.drawdown);
-      setPortfolioValue(result.portfolioValue);
-      setPeakValue(result.peakValue);
+      setVolatility(resolution.result.volatility);
+      setDrawdown(resolution.result.drawdown);
+      setPortfolioValue(resolution.result.portfolioValue);
+      setPeakValue(resolution.result.peakValue);
 
-      setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
-      if (dayReturn > 50) setGems(g => g + 1);
-      if (dayReturn > 0) addStars(1);
+      const rewards = applyDailyRewards({
+        dayReturn,
+        weights,
+        day,
+        task,
+        taskGoals,
+        badges,
+        history,
+        allowedAssets,
+        eventId: event.id,
+        effect: resolution.effect,
+      });
 
-      const goal = taskGoals[task.id];
-      let taskCompleted = false;
-      if (goal && goal.check(weights)) {
-        taskCompleted = true;
-        setCoins(c => c + goal.reward.coins);
-        setGems(g => g + goal.reward.gems);
-      }
-
-      const earnedBadges = checkBadgeEligibility(weights, history, dayReturn, badges);
-      let newBadges = [...badges, ...earnedBadges];
-      if (goal && taskCompleted && goal.reward.badge && !newBadges.includes(goal.reward.badge)) {
-        newBadges.push(goal.reward.badge);
-      }
-      setBadges(newBadges);
+      setCoins(c => c + rewards.coins);
+      setGems(g => g + rewards.gems);
+      if (rewards.stars > 0) addStars(rewards.stars);
+      setBadges(rewards.newBadges);
+      setHistory([...history, rewards.historyEntry]);
+      setLastTaskResult(rewards.lastTaskResult);
 
       const taskIdx = (day + 1) % tasksData.length;
       setTask(tasksData[taskIdx]);
       setTaskObjective(taskGoals[tasksData[taskIdx].id].objective);
       setDay(day + 1);
 
-      const sanitizedWeights = Object.fromEntries(
-        Object.entries(weights).map(([k, v]) => [k, allowedAssets.includes(k) ? v : 0])
-      );
-      setHistory([
-        ...history,
-        {
-          day: day + 1,
-          weights: { ...sanitizedWeights },
-          eventId: event.id,
-          effect: choice.effect,
-          returns: dayReturn,
-          taskId: task.id,
-          taskCompleted,
-          reward: taskCompleted ? goal.reward : undefined,
-        },
-      ]);
-
-      setLastTaskResult(goal ? { title: task.title, completed: taskCompleted, reward: goal.reward } : null);
-
-      // remove choices after resolving
-      setEvent({ ...event, choices: undefined });
+      setEvent(resolution.updatedEvent);
       return;
-    }
-
-    // Fun event: meme or surprise
-    if (checkEasterEgg()) {
-      setShowModal(true);
-      setModalContent(EASTER_EGG_MESSAGE);
-      setReturns(r => (r !== null ? r + 5 : 5));
-      setCoins(c => c + 10);
-      setGems(g => g + 1);
     }
 
     setWheelUsed(false);
 
-    // Randomly trigger a dilemma or quiz
-    const randomDilemma = generateRandomDilemma(dilemmaQuestions, completedDilemmas);
-    if (randomDilemma) {
-      const idx = dilemmaQuestions.indexOf(randomDilemma);
-      if (idx !== -1) {
-        setDilemma(randomDilemma);
-        setCurrentDilemmaIndex(idx);
+    const encounter = maybeTriggerEncounter(
+      dilemmaQuestions,
+      completedDilemmas,
+      GAME_CONFIG.QUIZ_QUESTIONS
+    );
+    if (encounter) {
+      if (encounter.type === 'easterEgg') {
+        setShowModal(true);
+        setModalContent(encounter.message!);
+        setReturns(r => (r !== null ? r + encounter.returnsBonus! : encounter.returnsBonus!));
+        setCoins(c => c + (encounter.coins || 0));
+        setGems(g => g + (encounter.gems || 0));
+      }
+      if (encounter.type === 'dilemma') {
+        setDilemma(encounter.dilemma!);
+        setCurrentDilemmaIndex(encounter.index!);
         return;
       }
-    }
-
-    const randomQuiz = generateRandomQuiz(GAME_CONFIG.QUIZ_QUESTIONS);
-    if (randomQuiz) {
-      setQuiz(randomQuiz);
-      return;
+      if (encounter.type === 'quiz') {
+        setQuiz(encounter.quiz);
+        return;
+      }
     }
 
     // Endgame trigger
@@ -335,43 +319,25 @@ export const useGameState = () => {
     setPortfolioValue(result.portfolioValue);
     setPeakValue(result.peakValue);
 
-    setCoins(c => c + Math.max(0, Math.floor(dayReturn / 10)));
-    if (dayReturn > 50) setGems(g => g + 1);
-    if (dayReturn > 0) addStars(1);
+    const rewards = applyDailyRewards({
+      dayReturn,
+      weights,
+      day,
+      task,
+      taskGoals,
+      badges,
+      history,
+      allowedAssets,
+      eventId: ev ? ev.id : undefined,
+      effect: ev ? ev.description : undefined,
+    });
 
-    const goal = taskGoals[task.id];
-    let taskCompleted = false;
-    if (goal && goal.check(weights)) {
-      taskCompleted = true;
-      setCoins(c => c + goal.reward.coins);
-      setGems(g => g + goal.reward.gems);
-    }
-
-    const earnedBadges = checkBadgeEligibility(weights, history, dayReturn, badges);
-    let newBadges = [...badges, ...earnedBadges];
-    if (goal && taskCompleted && goal.reward.badge && !newBadges.includes(goal.reward.badge)) {
-      newBadges.push(goal.reward.badge);
-    }
-    setBadges(newBadges);
-
-    const sanitizedWeights = Object.fromEntries(
-      Object.entries(weights).map(([k, v]) => [k, allowedAssets.includes(k) ? v : 0])
-    );
-    setHistory([
-      ...history,
-      {
-        day: day + 1,
-        weights: { ...sanitizedWeights },
-        eventId: ev ? ev.id : undefined,
-        effect: ev ? ev.description : undefined,
-        returns: dayReturn,
-        taskId: task.id,
-        taskCompleted,
-        reward: taskCompleted ? goal.reward : undefined,
-      },
-    ]);
-
-    setLastTaskResult(goal ? { title: task.title, completed: taskCompleted, reward: goal.reward } : null);
+    setCoins(c => c + rewards.coins);
+    setGems(g => g + rewards.gems);
+    if (rewards.stars > 0) addStars(rewards.stars);
+    setBadges(rewards.newBadges);
+    setHistory([...history, rewards.historyEntry]);
+    setLastTaskResult(rewards.lastTaskResult);
   }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task, allowedAssets, endgame]);
 
   return {
