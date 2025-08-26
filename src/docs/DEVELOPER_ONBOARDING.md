@@ -49,7 +49,7 @@ legacy-guardians/
 │   │   ├── game-config.ts  # 游戏配置
 │   │   ├── tasks.json      # 任务配置
 │   │   ├── artifacts.json  # 神器配置
-│   │   └── ai-partner.json # AI伙伴配置
+│   │   └── ai-personalities.json # AI伙伴配置
 │   ├── modules/            # 游戏数据模块
 │   │   ├── assets.ts       # 资产定义
 │   │   ├── badges.ts       # 徽章定义

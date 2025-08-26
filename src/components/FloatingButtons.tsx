@@ -7,6 +7,7 @@ interface FloatingButtonsProps {
   wheelResult: string | null;
   wheelUsed: boolean;
   aiChatOpen: boolean;
+  aiEnabled: boolean;
   onWheelOpen: () => void;
   onWheelClose: () => void;
   onSpinWheel: () => void;
@@ -128,6 +129,7 @@ export const FloatingButtons: React.FC<FloatingButtonsProps> = ({
   wheelResult,
   wheelUsed,
   aiChatOpen,
+  aiEnabled,
   onWheelOpen,
   onWheelClose,
   onSpinWheel,
@@ -149,13 +151,15 @@ export const FloatingButtons: React.FC<FloatingButtonsProps> = ({
       </FloatingButton>
 
       {/* AI Chat Floating Button */}
-      <FloatingButton
-        $type="chat"
-        onClick={onAiChatOpen}
-        title="向AI伙伴提问"
-      >
-        💬
-      </FloatingButton>
+      {aiEnabled && (
+        <FloatingButton
+          $type="chat"
+          onClick={onAiChatOpen}
+          title="向AI伙伴提问"
+        >
+          💬
+        </FloatingButton>
+      )}
 
       {/* Parent Control Floating Button */}
       <FloatingButton

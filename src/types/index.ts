@@ -72,10 +72,12 @@ export interface SpinWheelOutcome {
 
 // AI Partner Types
 export interface AIPartner {
-	name: string;
-	avatar: string;
-	personality: string;
-	feedbackTemplates: string[];
+        id: string;
+        name: string;
+        avatar: string;
+        prompt: string;
+        riskTolerance: 'low' | 'medium' | 'high';
+        feedbackTemplates: string[];
 }
 
 // Game State Types

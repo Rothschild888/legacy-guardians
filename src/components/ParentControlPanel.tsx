@@ -5,9 +5,14 @@ import { theme } from '../styles/theme';
 interface ParentControlPanelProps {
   pendingRequest: number | null;
   allowedAssets: string[];
+  aiEnabled: boolean;
+  aiPersonality: string;
+  aiPersonalities: { id: string; name: string; riskTolerance: 'low' | 'medium' | 'high' }[];
   onApprove: () => void;
   onReject: () => void;
   onToggleAsset: (asset: string) => void;
+  onToggleAi: (enabled: boolean) => void;
+  onPersonalityChange: (id: string) => void;
   onClose: () => void;
 }
 
@@ -59,12 +64,25 @@ const AssetLabel = styled.label`
   gap: 6px;
 `;
 
+const Select = styled.select`
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid ${theme.colors.cyber.accent};
+  background: ${theme.colors.cyber.dark};
+  color: ${theme.colors.cyber.text};
+`;
+
 export const ParentControlPanel: React.FC<ParentControlPanelProps> = ({
   pendingRequest,
   allowedAssets,
+  aiEnabled,
+  aiPersonality,
+  aiPersonalities,
   onApprove,
   onReject,
   onToggleAsset,
+  onToggleAi,
+  onPersonalityChange,
   onClose
 }) => {
   const assets = [
@@ -76,6 +94,12 @@ export const ParentControlPanel: React.FC<ParentControlPanelProps> = ({
     { key: 'stablecoin', label: '稳定币' },
     { key: 'yield', label: '收益' }
   ];
+
+  const riskMap: Record<'low' | 'medium' | 'high', string> = {
+    low: '稳健',
+    medium: '平衡',
+    high: '进取'
+  };
 
   return (
     <Overlay>
@@ -102,6 +126,30 @@ export const ParentControlPanel: React.FC<ParentControlPanelProps> = ({
                 {a.label}
               </AssetLabel>
             ))}
+          </AssetsList>
+        </div>
+
+        <div>
+          <h4>AI 设置</h4>
+          <AssetsList>
+            <AssetLabel>
+              <input
+                type="checkbox"
+                checked={aiEnabled}
+                onChange={e => onToggleAi(e.target.checked)}
+              />
+              启用AI聊天
+            </AssetLabel>
+            <Select
+              value={aiPersonality}
+              onChange={e => onPersonalityChange(e.target.value)}
+            >
+              {aiPersonalities.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.name}（{riskMap[p.riskTolerance]}）
+                </option>
+              ))}
+            </Select>
           </AssetsList>
         </div>
       </Panel>

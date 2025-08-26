@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { theme } from '../styles/theme';
+import type { AIPartner } from '../types';
 
 interface ModalsProps {
   showModal: boolean;
@@ -16,7 +17,7 @@ interface ModalsProps {
   avatarOptions: string[];
   theme: string;
   pendingCompanyName: string;
-  aiPartnerData: any;
+  aiPartnerData: AIPartner;
   aiInput: string;
   aiResponse: string;
   returns: number | null;
