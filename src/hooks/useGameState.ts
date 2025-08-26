@@ -4,13 +4,20 @@ import { useState, useCallback } from 'react';
 import { Dilemma } from '../types';
 import tasksData from '../constants/tasks.json';
 import { events as eventsData } from '../modules/events';
-import { badges as badgeData } from '../modules/badges';
 import { dilemmas as dilemmaQuestions } from '../modules/dilemmas';
 import { handleSpinWheel as spinWheel } from '../modules/spinWheel';
 import aiPersonalities from '../constants/ai-personalities.json';
 import { assets as assetsData } from '../modules/assets';
 import { getAiResponse } from '../utils/ai';
-import { calculateDailyReturns, generateRandomEvent, generateRandomDilemma, generateRandomQuiz, checkEasterEgg, checkBadgeEligibility } from '../utils/game-logic';
+import {
+  calculateDailyReturns,
+  generateRandomEvent,
+  generateRandomDilemma,
+  generateRandomQuiz,
+  checkEasterEgg,
+  checkBadgeEligibility,
+  checkGameEnd,
+} from '../utils/game-logic';
 import { GAME_CONFIG } from '../constants/game-config';
 
 // Task objectives and rewards
@@ -334,13 +341,13 @@ export const useGameState = () => {
     }
 
     // Endgame trigger
-    const wealthGoal = 300;
-    const allBadges = badgeData.map(b => b.name.replace('徽章',''));
-    const hasAllBadges = allBadges.every(b => badges.includes(b));
-    if (returns !== null && returns >= wealthGoal && hasAllBadges) {
+    if (
+      returns !== null &&
+      checkGameEnd(returns, badges, GAME_CONFIG.MAX_BADGES) &&
+      !endgame
+    ) {
       setEndgame(true);
       setTimeout(() => setShowSummary(true), 2500);
-      return;
     }
 
     // Pick a random event
@@ -402,7 +409,7 @@ export const useGameState = () => {
     ]);
 
     setLastTaskResult(goal ? { title: task.title, completed: taskCompleted, reward: goal.reward } : null);
-  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task, allowedAssets]);
+  }, [day, returns, badges, weights, history, completedDilemmas, portfolioValue, peakValue, event, task, allowedAssets, endgame]);
 
   return {
     // State

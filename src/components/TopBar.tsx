@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { theme } from '../styles/theme';
+import { GAME_CONFIG } from '../constants/game-config';
 
 interface TopBarProps {
   companyName: string;
@@ -156,7 +157,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </StatusInfo>
         
         <StatusInfoSecondary>
-          财富目标：300%
+          财富目标：{GAME_CONFIG.WEALTH_GOAL}%
         </StatusInfoSecondary>
         
         <StatusInfoText>
