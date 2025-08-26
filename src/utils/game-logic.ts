@@ -182,10 +182,20 @@ export function maybeSelectRandom<T>(
 }
 
 /**
- * Generate random market event
+ * Generate random market event filtered by allowed assets.
+ * Events that reference any disallowed asset are excluded.
  */
-export function generateRandomEvent(events: MarketEvent[]): MarketEvent | null {
-        return maybeSelectRandom(events, GAME_CONFIG.DAILY_EVENT_PROBABILITY);
+export function generateRandomEvent(
+        events: MarketEvent[],
+        allowedAssets: string[]
+): MarketEvent | null {
+        const eligible = events.filter(ev =>
+                ev.affected.every(asset => allowedAssets.includes(asset))
+        );
+        if (eligible.length === 0) {
+                return null;
+        }
+        return maybeSelectRandom(eligible, GAME_CONFIG.DAILY_EVENT_PROBABILITY);
 }
 
 /**
