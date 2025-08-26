@@ -10,7 +10,7 @@ import { handleSpinWheel as spinWheel } from '../modules/spinWheel';
 import aiPersonalities from '../constants/ai-personalities.json';
 import { assets as assetsData } from '../modules/assets';
 import { getAiResponse } from '../utils/ai';
-import { calculateDailyReturns, generateRandomEvent, generateRandomDilemma, generateRandomQuiz, checkEasterEgg } from '../utils/game-logic';
+import { calculateDailyReturns, generateRandomEvent, generateRandomDilemma, generateRandomQuiz, checkEasterEgg, checkBadgeEligibility } from '../utils/game-logic';
 import { GAME_CONFIG } from '../constants/game-config';
 
 // Task objectives and rewards
@@ -253,28 +253,8 @@ export const useGameState = () => {
         setGems(g => g + goal.reward.gems);
       }
 
-      let newBadges = [...badges];
-      if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
-        newBadges.push('分散者');
-      }
-      if (history.length >= 2 && history.slice(-2).every(h => h.returns > 0) && dayReturn > 0 && !badges.includes('长远目光')) {
-        newBadges.push('长远目光');
-      }
-      if (Object.values(weights).some(w => w > 60) && dayReturn > 0 && !badges.includes('风险管理者')) {
-        newBadges.push('风险管理者');
-      }
-      if ((weights.esg || 0) >= 20 && !badges.includes('绿色先锋')) {
-        newBadges.push('绿色先锋');
-      }
-      if ((weights.gold || 0) >= 20 && !badges.includes('避险守护者')) {
-        newBadges.push('避险守护者');
-      }
-      if ((weights.stablecoin || 0) >= 20 && !badges.includes('平静守护者')) {
-        newBadges.push('平静守护者');
-      }
-      if ((weights.yield || 0) >= 20 && !badges.includes('收益智者')) {
-        newBadges.push('收益智者');
-      }
+      const earnedBadges = checkBadgeEligibility(weights, history, dayReturn, badges);
+      let newBadges = [...badges, ...earnedBadges];
       if (goal && taskCompleted && goal.reward.badge && !newBadges.includes(goal.reward.badge)) {
         newBadges.push(goal.reward.badge);
       }
@@ -378,28 +358,8 @@ export const useGameState = () => {
       setGems(g => g + goal.reward.gems);
     }
 
-    let newBadges = [...badges];
-    if (Object.values(weights).filter((w) => (w as number) > 0).length >= 4 && !badges.includes('分散者')) {
-      newBadges.push('分散者');
-    }
-    if (history.length >= 2 && history.slice(-2).every(h => h.returns > 0) && dayReturn > 0 && !badges.includes('长远目光')) {
-      newBadges.push('长远目光');
-    }
-    if (Object.values(weights).some(w => w > 60) && dayReturn > 0 && !badges.includes('风险管理者')) {
-      newBadges.push('风险管理者');
-    }
-    if ((weights.esg || 0) >= 20 && !badges.includes('绿色先锋')) {
-      newBadges.push('绿色先锋');
-    }
-    if ((weights.gold || 0) >= 20 && !badges.includes('避险守护者')) {
-      newBadges.push('避险守护者');
-    }
-    if ((weights.stablecoin || 0) >= 20 && !badges.includes('平静守护者')) {
-      newBadges.push('平静守护者');
-    }
-    if ((weights.yield || 0) >= 20 && !badges.includes('收益智者')) {
-      newBadges.push('收益智者');
-    }
+    const earnedBadges = checkBadgeEligibility(weights, history, dayReturn, badges);
+    let newBadges = [...badges, ...earnedBadges];
     if (goal && taskCompleted && goal.reward.badge && !newBadges.includes(goal.reward.badge)) {
       newBadges.push(goal.reward.badge);
     }
