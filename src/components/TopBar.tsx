@@ -5,10 +5,10 @@ import { theme } from '../styles/theme';
 interface TopBarProps {
   companyName: string;
   avatar: string;
-  badges: string[];
   day: number;
   coins: number;
   gems: number;
+  stars: number;
   theme: string;
   onEditCompany: () => void;
   onRequestCoins: () => void;
@@ -127,10 +127,10 @@ const RequestButton = styled.button`
 export const TopBar: React.FC<TopBarProps> = ({
   companyName,
   avatar,
-  badges,
   day,
   coins,
   gems,
+  stars,
   theme: currentTheme,
   onEditCompany,
   onRequestCoins
@@ -152,7 +152,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </CompanyInfo>
         
         <StatusInfo>
-          守护者之星：{badges.length}/5
+          星星：{stars}
         </StatusInfo>
         
         <StatusInfoSecondary>

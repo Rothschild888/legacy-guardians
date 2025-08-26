@@ -12,7 +12,7 @@ export const GameLayout: React.FC = () => {
   
   const {
     // State
-    companyName, avatar, theme, coins, gems, wheelOpen, wheelResult, wheelUsed,
+    companyName, avatar, theme, coins, gems, stars, wheelOpen, wheelResult, wheelUsed,
     aiChatOpen, aiInput, aiResponse, dilemma, quiz, quizAnswered, endgame,
     showSummary, history, weights, day, returns, volatility, drawdown, event, task, badges,
     showModal, modalContent, pendingCompanyName, avatarOptions,
@@ -54,7 +54,7 @@ export const GameLayout: React.FC = () => {
   return (
     <div className="legacy-container" style={{ paddingTop: 0, maxWidth: '1200px', margin: '2rem auto' }}>
       <TopBar
-        {...{ companyName, avatar, badges, day, coins, gems, theme }}
+        {...{ companyName, avatar, day, coins, gems, stars, theme }}
         onEditCompany={handlers.editCompany}
         onRequestCoins={handlers.requestCoins}
       />
@@ -68,7 +68,7 @@ export const GameLayout: React.FC = () => {
       />
 
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'nowrap', marginBottom: '2rem' }}>
-        <Sidebar {...{ aiPartnerData, badgesData, badges, history }} onBadgeClick={handlers.badgeClick} />
+        <Sidebar {...{ aiPartnerData, badgesData, badges, history, stars }} onBadgeClick={handlers.badgeClick} />
         
         <GameArea
           task={task} event={event} artifactsData={artifactsData} weights={weights} returns={returns}
