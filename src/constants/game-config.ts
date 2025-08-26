@@ -96,10 +96,9 @@ export const GAME_CONFIG = {
 export const ASSET_CATEGORIES = {
 	TECH: 'tech',
 	BOND: 'bond',
-	COMMODITY: 'commodity',
-	CRYPTO: 'crypto',
-	ESG: 'esg',
-	GOLD: 'gold',
+        CRYPTO: 'crypto',
+        ESG: 'esg',
+        GOLD: 'gold',
 	STABLECOIN: 'stablecoin',
 	YIELD: 'yield',
 } as const;

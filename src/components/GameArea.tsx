@@ -99,10 +99,14 @@ const AssetsGrid = styled.div`
 
 const AssetCard = styled.div<{ $theme: string }>`
   flex: 1;
-  background: ${({ $theme }) => 
+  background: ${({ $theme }) =>
     $theme === 'forest' ? 'rgba(0,255,247,0.10)' :
     $theme === 'snow' ? 'rgba(0,234,255,0.10)' :
-    $theme === 'volcano' ? 'rgba(255,111,0,0.10)' :
+    $theme === 'palace' ? 'rgba(255,215,0,0.10)' :
+    $theme === 'oasis' ? 'rgba(0,255,0,0.10)' :
+    $theme === 'lake' ? 'rgba(30,144,255,0.10)' :
+    $theme === 'temple' ? 'rgba(255,165,0,0.10)' :
+    $theme === 'starsea' ? 'rgba(255,0,204,0.10)' :
     'rgba(255,0,204,0.10)'
   };
   border-radius: 12px;
@@ -323,9 +327,13 @@ export const GameArea: React.FC<GameAreaProps> = ({
                 title={`点击查看${artifact.name}详情`}
                 onClick={() => {
                   onShowModal(`${artifact.name}（${artifact.icon}）\n\n权重: ${weights[artifact.key] || 0}%\n\n此资产代表：${
-                    artifact.theme === 'forest' ? '科技股' : 
-                    artifact.theme === 'snow' ? '债券' : 
-                    artifact.theme === 'volcano' ? '商品' : '加密货币'
+                    artifact.theme === 'forest' ? '科技股' :
+                    artifact.theme === 'snow' ? '债券' :
+                    artifact.theme === 'palace' ? '黄金' :
+                    artifact.theme === 'oasis' ? 'ESG' :
+                    artifact.theme === 'lake' ? '稳定币' :
+                    artifact.theme === 'temple' ? '收益资产' :
+                    '加密货币'
                   }\n\n风险提示: ${(weights[artifact.key] || 0) > 60 ? '集中风险' : '分散配置'}`);
                 }}
               >
