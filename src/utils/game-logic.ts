@@ -137,10 +137,10 @@ export function checkBadgeEligibility(
  * Calculate resource rewards based on returns
  */
 export function calculateResourceRewards(returns: number): { coins: number; gems: number } {
-	const coins = Math.max(0, Math.floor(returns * GAME_CONFIG.COIN_REWARD_RATIO));
-	const gems = returns > GAME_CONFIG.GEM_REWARD_THRESHOLD ? 1 : 0;
-	
-	return { coins, gems };
+        const coins = Math.max(0, Math.round(returns * GAME_CONFIG.COIN_REWARD_RATIO));
+        const gems = returns > GAME_CONFIG.GEM_REWARD_THRESHOLD ? 1 : 0;
+
+        return { coins, gems };
 }
 
 /**
