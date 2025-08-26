@@ -164,31 +164,44 @@ export const useGameState = () => {
 
   // Reset game function
   const resetGame = useCallback(() => {
-    setWeights({ ...INITIAL_STATE.weights });
-    setDay(INITIAL_STATE.day);
-    setReturns(INITIAL_STATE.returns);
-    setEvent(INITIAL_STATE.event);
-    setTask(INITIAL_STATE.task);
-    setTaskObjective(INITIAL_STATE.taskObjective);
-    setLastTaskResult(INITIAL_STATE.lastTaskResult);
-    setBadges([...INITIAL_STATE.badges]);
-    setHistory([...INITIAL_STATE.history]);
-    setVolatility(INITIAL_STATE.volatility);
-    setDrawdown(INITIAL_STATE.drawdown);
-    setPortfolioValue(INITIAL_STATE.portfolioValue);
-    setPeakValue(INITIAL_STATE.peakValue);
-    setQuizActive(INITIAL_STATE.quizActive);
-    setQuizResult(INITIAL_STATE.quizResult);
-    setCoins(INITIAL_STATE.coins);
-    setGems(INITIAL_STATE.gems);
-    setStars(INITIAL_STATE.stars);
-    setProgress(INITIAL_STATE.progress);
-    setEndgame(INITIAL_STATE.endgame);
-    setShowSummary(INITIAL_STATE.showSummary);
-    setDilemma(INITIAL_STATE.dilemma);
-    setCurrentDilemmaIndex(INITIAL_STATE.currentDilemmaIndex);
-    setCompletedDilemmas([...INITIAL_STATE.completedDilemmas]);
-    setSkillProgress({ ...INITIAL_STATE.skillProgress });
+    const resetState: Record<string, (value: any) => void> = {
+      weights: setWeights,
+      day: setDay,
+      returns: setReturns,
+      event: setEvent,
+      task: setTask,
+      taskObjective: setTaskObjective,
+      lastTaskResult: setLastTaskResult,
+      badges: setBadges,
+      history: setHistory,
+      volatility: setVolatility,
+      drawdown: setDrawdown,
+      portfolioValue: setPortfolioValue,
+      peakValue: setPeakValue,
+      quizActive: setQuizActive,
+      quizResult: setQuizResult,
+      coins: setCoins,
+      gems: setGems,
+      stars: setStars,
+      progress: setProgress,
+      endgame: setEndgame,
+      showSummary: setShowSummary,
+      dilemma: setDilemma,
+      currentDilemmaIndex: setCurrentDilemmaIndex,
+      completedDilemmas: setCompletedDilemmas,
+      skillProgress: setSkillProgress,
+    };
+
+    Object.entries(resetState).forEach(([key, setter]) => {
+      const value = (INITIAL_STATE as any)[key];
+      if (Array.isArray(value)) {
+        setter([...value]);
+      } else if (value && typeof value === 'object') {
+        setter({ ...value });
+      } else {
+        setter(value);
+      }
+    });
   }, []);
 
   // Handle weight change
