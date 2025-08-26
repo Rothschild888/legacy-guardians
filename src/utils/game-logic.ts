@@ -92,8 +92,10 @@ export function checkBadgeEligibility(
         const newBadges: string[] = [];
         const requirements = GAME_CONFIG.BADGE_REQUIREMENTS;
 
+        const { nonZeroCount, maxWeight } = getWeightStats(weights);
+
         // Check diversifier badge
-        if (Object.values(weights).filter(w => w > 0).length >= requirements.DIVERSIFIER) {
+        if (nonZeroCount >= requirements.DIVERSIFIER) {
                 if (!existingBadges.includes('分散者')) {
                         newBadges.push('分散者');
                 }
@@ -109,8 +111,7 @@ export function checkBadgeEligibility(
         }
 
         // Check risk manager badge
-        if (Object.values(weights).some(w => w > requirements.RISK_MANAGER) &&
-                currentReturns > 0) {
+        if (maxWeight > requirements.RISK_MANAGER && currentReturns > 0) {
                 if (!existingBadges.includes('风险管理者')) {
                         newBadges.push('风险管理者');
                 }
@@ -216,36 +217,48 @@ export function calculatePlayerLevel(experience: number): string {
  * Validate asset allocation weights
  */
 export function validateAssetWeights(weights: { [key: string]: number }): boolean {
-	const total = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
-	return Math.abs(total - GAME_CONFIG.TOTAL_WEIGHT) < 0.01; // Allow small floating point errors
+        const total = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+        return Math.abs(total - GAME_CONFIG.TOTAL_WEIGHT) < 0.01; // Allow small floating point errors
+}
+
+/**
+ * Derive basic statistics from asset weights
+ */
+export function getWeightStats(weights: { [key: string]: number }): {
+        nonZeroCount: number;
+        maxWeight: number;
+        total: number;
+} {
+        const values = Object.values(weights);
+        const nonZeroCount = values.filter(w => w > 0).length;
+        const maxWeight = values.length ? Math.max(...values) : 0;
+        const total = values.reduce((sum, weight) => sum + weight, 0);
+        return { nonZeroCount, maxWeight, total };
 }
 
 /**
  * Get asset allocation summary
  */
 export function getAssetAllocationSummary(weights: { [key: string]: number }): {
-	total: number;
-	distributed: number;
-	concentration: number;
+        total: number;
+        distributed: number;
+        concentration: number;
 } {
-	const total = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
-	const distributed = Object.values(weights).filter(w => w > 0).length;
-	const concentration = Math.max(...Object.values(weights));
-	
-	return { total, distributed, concentration };
+        const { total, nonZeroCount, maxWeight } = getWeightStats(weights);
+
+        return { total, distributed: nonZeroCount, concentration: maxWeight };
 }
 
 /**
  * Calculate portfolio risk score
  */
 export function calculateRiskScore(weights: { [key: string]: number }): number {
-	const concentration = Math.max(...Object.values(weights));
-	const diversification = Object.values(weights).filter(w => w > 0).length;
-	
-	// Higher concentration = higher risk, more diversification = lower risk
-	let riskScore = concentration / 100; // 0-1 scale
-	riskScore -= (diversification - 1) * 0.1; // Reduce risk for diversification
-	riskScore = Math.max(0, Math.min(1, riskScore)); // Clamp to 0-1
-	
-	return Math.round(riskScore * 100); // Return as percentage
+        const { maxWeight, nonZeroCount } = getWeightStats(weights);
+
+        // Higher concentration = higher risk, more diversification = lower risk
+        let riskScore = maxWeight / 100; // 0-1 scale
+        riskScore -= (nonZeroCount - 1) * 0.1; // Reduce risk for diversification
+        riskScore = Math.max(0, Math.min(1, riskScore)); // Clamp to 0-1
+
+        return Math.round(riskScore * 100); // Return as percentage
 }
