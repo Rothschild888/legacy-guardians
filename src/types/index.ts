@@ -67,16 +67,6 @@ export interface Dilemma {
         options: DilemmaOption[];
 }
 
-// Spin Wheel Types
-export interface SpinWheelOutcome {
-        label: string;
-        color: string;
-        effect: (
-                setReturns: Dispatch<SetStateAction<number | null>>,
-                setBadges: Dispatch<SetStateAction<string[]>>
-        ) => void;
-}
-
 // AI Partner Types
 export interface AIPartner {
         id: string;

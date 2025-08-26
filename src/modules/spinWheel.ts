@@ -1,39 +1,27 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { SpinWheelOutcome } from '../types';
+import { GAME_CONFIG } from '../constants/game-config';
 
-// Possible outcomes of the spin wheel mini-game
-export const spinWheelOutcomes: SpinWheelOutcome[] = [
-  {
-    label: '收益+10%',
-    color: '#27ae60',
-    effect: (setReturns) => setReturns(r => (r !== null ? r + 10 : 10)),
-  },
-  {
-    label: '收益-10%',
-    color: '#e74c3c',
-    effect: (setReturns) => setReturns(r => (r !== null ? r - 10 : -10)),
-  },
-  {
-    label: '获得分散者徽章',
-    color: '#00fff7',
-    effect: (_, setBadges) => setBadges(b => (b.includes('分散者') ? b : [...b, '分散者'])),
-  },
-  {
-    label: '风险提升',
-    color: '#ff00cc',
-    effect: (setReturns) => setReturns(r => (r !== null ? r - 5 : -5)),
-  },
-  {
-    label: '知识大师徽章',
-    color: '#f6d365',
-    effect: (_, setBadges) => setBadges(b => (b.includes('知识大师') ? b : [...b, '知识大师'])),
-  },
-  {
-    label: '无变化',
-    color: '#888',
-    effect: () => {},
-  },
-];
+type EffectFn = (
+  setReturns: Dispatch<SetStateAction<number | null>>,
+  setBadges: Dispatch<SetStateAction<string[]>>
+) => void;
+
+type EffectKey = (typeof GAME_CONFIG.WHEEL_OUTCOMES)[number]['effect'];
+
+// Map configuration effect keys to their implementation
+const EFFECTS: Record<EffectKey, EffectFn> = {
+  returns_plus_10: (setReturns, _setBadges) =>
+    setReturns((r) => (r !== null ? r + 10 : 10)),
+  returns_minus_10: (setReturns, _setBadges) =>
+    setReturns((r) => (r !== null ? r - 10 : -10)),
+  badge_diversifier: (_setReturns, setBadges) =>
+    setBadges((b) => (b.includes('分散者') ? b : [...b, '分散者'])),
+  risk_increase: (setReturns, _setBadges) =>
+    setReturns((r) => (r !== null ? r - 5 : -5)),
+  badge_knowledge_master: (_setReturns, setBadges) =>
+    setBadges((b) => (b.includes('知识大师') ? b : [...b, '知识大师'])),
+  no_change: (_setReturns, _setBadges) => {},
+};
 
 interface SpinWheelHandlers {
   setReturns: Dispatch<SetStateAction<number | null>>;
@@ -51,13 +39,15 @@ export const handleSpinWheel = ({
   setWheelUsed,
   setWheelOpen,
 }: SpinWheelHandlers) => {
-  const idx = Math.floor(Math.random() * spinWheelOutcomes.length);
-  const outcome = spinWheelOutcomes[idx];
+  const outcomes = GAME_CONFIG.WHEEL_OUTCOMES;
+  const idx = Math.floor(Math.random() * outcomes.length);
+  const outcome = outcomes[idx];
   setWheelResult(outcome.label);
-  outcome.effect(setReturns, setBadges);
+  EFFECTS[outcome.effect](setReturns, setBadges);
   setWheelUsed(true);
   setTimeout(() => {
     setWheelOpen(false);
     setWheelResult(null);
   }, 1800);
 };
+
