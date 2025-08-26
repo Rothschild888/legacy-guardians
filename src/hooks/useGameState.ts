@@ -20,72 +20,69 @@ import {
   checkGameEnd,
 } from '../utils/game-logic';
 import { GAME_CONFIG } from '../constants/game-config';
+import { INITIAL_STATE } from '../constants/initial-state';
 
 export const useGameState = () => {
   // Company/Avatar Customization
-  const [companyName, setCompanyName] = useState('我的空岛公司');
-  const [avatar, setAvatar] = useState('https://cdn-icons-png.flaticon.com/512/616/616494.png');
-  const [theme, setTheme] = useState('cyberpunk');
+  const [companyName, setCompanyName] = useState(INITIAL_STATE.companyName);
+  const [avatar, setAvatar] = useState(INITIAL_STATE.avatar);
+  const [theme, setTheme] = useState(INITIAL_STATE.theme);
 
   // Resource Management
-  const [coins, setCoins] = useState(100);
-  const [gems, setGems] = useState(5);
-  const [stars, setStars] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [allowedAssets, setAllowedAssets] = useState<string[]>(['tech','bond','gold','crypto','esg','stablecoin','yield']);
-  const [pendingCoinRequest, setPendingCoinRequest] = useState<number | null>(null);
+  const [coins, setCoins] = useState(INITIAL_STATE.coins);
+  const [gems, setGems] = useState(INITIAL_STATE.gems);
+  const [stars, setStars] = useState(INITIAL_STATE.stars);
+  const [progress, setProgress] = useState(INITIAL_STATE.progress);
+  const [allowedAssets, setAllowedAssets] = useState<string[]>([...INITIAL_STATE.allowedAssets]);
+  const [pendingCoinRequest, setPendingCoinRequest] = useState<number | null>(INITIAL_STATE.pendingCoinRequest);
 
   // Spin the Wheel state
-  const [wheelOpen, setWheelOpen] = useState(false);
-  const [wheelResult, setWheelResult] = useState<string | null>(null);
-  const [wheelUsed, setWheelUsed] = useState(false);
+  const [wheelOpen, setWheelOpen] = useState(INITIAL_STATE.wheelOpen);
+  const [wheelResult, setWheelResult] = useState<string | null>(INITIAL_STATE.wheelResult);
+  const [wheelUsed, setWheelUsed] = useState(INITIAL_STATE.wheelUsed);
 
   // AI chat state
-  const [aiChatOpen, setAiChatOpen] = useState(false);
-  const [aiInput, setAiInput] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
-  const [aiPersonality, setAiPersonality] = useState<string>(aiPersonalities[0].id);
-  const [aiEnabled, setAiEnabled] = useState(true);
+  const [aiChatOpen, setAiChatOpen] = useState(INITIAL_STATE.aiChatOpen);
+  const [aiInput, setAiInput] = useState(INITIAL_STATE.aiInput);
+  const [aiResponse, setAiResponse] = useState(INITIAL_STATE.aiResponse);
+  const [aiPersonality, setAiPersonality] = useState<string>(INITIAL_STATE.aiPersonality);
+  const [aiEnabled, setAiEnabled] = useState(INITIAL_STATE.aiEnabled);
 
   // Dilemma/Quiz state
-  const [dilemma, setDilemma] = useState<Dilemma | null>(null);
-  const [currentDilemmaIndex, setCurrentDilemmaIndex] = useState<number | null>(null);
-  const [quiz, setQuiz] = useState<{ question: string, options: string[], answer: string } | null>(null);
-  const [quizAnswered, setQuizAnswered] = useState<string | null>(null);
+  const [dilemma, setDilemma] = useState<Dilemma | null>(INITIAL_STATE.dilemma);
+  const [currentDilemmaIndex, setCurrentDilemmaIndex] = useState<number | null>(INITIAL_STATE.currentDilemmaIndex);
+  const [quiz, setQuiz] = useState<{ question: string, options: string[], answer: string } | null>(INITIAL_STATE.quiz);
+  const [quizAnswered, setQuizAnswered] = useState<string | null>(INITIAL_STATE.quizAnswered);
 
   // Main game state
-  const [endgame, setEndgame] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [history, setHistory] = useState<any[]>([]);
-  const [completedDilemmas, setCompletedDilemmas] = useState<number[]>([]);
-  const [skillProgress, setSkillProgress] = useState<{ [key: string]: number }>({
-    diversification: 0,
-    'risk-management': 0,
-    knowledge: 0
-  });
-  const [weights, setWeights] = useState<{ [key: string]: number }>({ tech: 16, bond: 16, gold: 16, crypto: 16, esg: 16, stablecoin: 10, yield: 10 });
-  const [day, setDay] = useState(0);
-  const [returns, setReturns] = useState<number | null>(null);
-  const [volatility, setVolatility] = useState<number | null>(null);
-  const [drawdown, setDrawdown] = useState<number | null>(null);
-  const [portfolioValue, setPortfolioValue] = useState(1);
-  const [peakValue, setPeakValue] = useState(1);
-  const [event, setEvent] = useState<any>(null);
-  const [task, setTask] = useState<any>(tasksData[0]);
-  const [taskObjective, setTaskObjective] = useState<string>(taskGoals[tasksData[0].id].objective);
+  const [endgame, setEndgame] = useState(INITIAL_STATE.endgame);
+  const [showSummary, setShowSummary] = useState(INITIAL_STATE.showSummary);
+  const [history, setHistory] = useState<any[]>([...INITIAL_STATE.history]);
+  const [completedDilemmas, setCompletedDilemmas] = useState<number[]>([...INITIAL_STATE.completedDilemmas]);
+  const [skillProgress, setSkillProgress] = useState<{ [key: string]: number }>({ ...INITIAL_STATE.skillProgress });
+  const [weights, setWeights] = useState<{ [key: string]: number }>({ ...INITIAL_STATE.weights });
+  const [day, setDay] = useState(INITIAL_STATE.day);
+  const [returns, setReturns] = useState<number | null>(INITIAL_STATE.returns);
+  const [volatility, setVolatility] = useState<number | null>(INITIAL_STATE.volatility);
+  const [drawdown, setDrawdown] = useState<number | null>(INITIAL_STATE.drawdown);
+  const [portfolioValue, setPortfolioValue] = useState(INITIAL_STATE.portfolioValue);
+  const [peakValue, setPeakValue] = useState(INITIAL_STATE.peakValue);
+  const [event, setEvent] = useState<any>(INITIAL_STATE.event);
+  const [task, setTask] = useState<any>(INITIAL_STATE.task);
+  const [taskObjective, setTaskObjective] = useState<string>(INITIAL_STATE.taskObjective);
   const [lastTaskResult, setLastTaskResult] = useState<
     { title: string; completed: boolean; reward: { coins: number; gems: number; badge?: string } } | null
-  >(null);
-  const [badges, setBadges] = useState<string[]>([]);
+  >(INITIAL_STATE.lastTaskResult);
+  const [badges, setBadges] = useState<string[]>([...INITIAL_STATE.badges]);
 
   // Sidebar/modal state
-  const [showModal, setShowModal] = useState(false);
-  const [modalContent, setModalContent] = useState<string>('');
-  const [pendingCompanyName, setPendingCompanyName] = useState(companyName);
+  const [showModal, setShowModal] = useState(INITIAL_STATE.showModal);
+  const [modalContent, setModalContent] = useState<string>(INITIAL_STATE.modalContent);
+  const [pendingCompanyName, setPendingCompanyName] = useState(INITIAL_STATE.pendingCompanyName);
 
   // Quiz state
-  const [quizActive, setQuizActive] = useState(false);
-  const [quizResult, setQuizResult] = useState('');
+  const [quizActive, setQuizActive] = useState(INITIAL_STATE.quizActive);
+  const [quizResult, setQuizResult] = useState(INITIAL_STATE.quizResult);
 
   // Avatar options
   const avatarOptions = [
@@ -166,31 +163,31 @@ export const useGameState = () => {
 
   // Reset game function
   const resetGame = useCallback(() => {
-    setWeights({ tech: 16, bond: 16, gold: 16, crypto: 16, esg: 16, stablecoin: 10, yield: 10 });
-    setDay(0);
-    setReturns(null);
-    setEvent(null);
-    setTask(tasksData[0]);
-    setTaskObjective(taskGoals[tasksData[0].id].objective);
-    setLastTaskResult(null);
-    setBadges([]);
-    setHistory([]);
-    setVolatility(null);
-    setDrawdown(null);
-    setPortfolioValue(1);
-    setPeakValue(1);
-    setQuizActive(false);
-    setQuizResult('');
-    setCoins(100);
-    setGems(5);
-    setStars(0);
-    setProgress(0);
-    setEndgame(false);
-    setShowSummary(false);
-    setDilemma(null);
-    setCurrentDilemmaIndex(null);
-    setCompletedDilemmas([]);
-    setSkillProgress({ diversification: 0, 'risk-management': 0, knowledge: 0 });
+    setWeights({ ...INITIAL_STATE.weights });
+    setDay(INITIAL_STATE.day);
+    setReturns(INITIAL_STATE.returns);
+    setEvent(INITIAL_STATE.event);
+    setTask(INITIAL_STATE.task);
+    setTaskObjective(INITIAL_STATE.taskObjective);
+    setLastTaskResult(INITIAL_STATE.lastTaskResult);
+    setBadges([...INITIAL_STATE.badges]);
+    setHistory([...INITIAL_STATE.history]);
+    setVolatility(INITIAL_STATE.volatility);
+    setDrawdown(INITIAL_STATE.drawdown);
+    setPortfolioValue(INITIAL_STATE.portfolioValue);
+    setPeakValue(INITIAL_STATE.peakValue);
+    setQuizActive(INITIAL_STATE.quizActive);
+    setQuizResult(INITIAL_STATE.quizResult);
+    setCoins(INITIAL_STATE.coins);
+    setGems(INITIAL_STATE.gems);
+    setStars(INITIAL_STATE.stars);
+    setProgress(INITIAL_STATE.progress);
+    setEndgame(INITIAL_STATE.endgame);
+    setShowSummary(INITIAL_STATE.showSummary);
+    setDilemma(INITIAL_STATE.dilemma);
+    setCurrentDilemmaIndex(INITIAL_STATE.currentDilemmaIndex);
+    setCompletedDilemmas([...INITIAL_STATE.completedDilemmas]);
+    setSkillProgress({ ...INITIAL_STATE.skillProgress });
   }, []);
 
   // Handle weight change
